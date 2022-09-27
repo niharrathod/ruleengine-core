@@ -22,8 +22,8 @@ jobs:
       with:
         go-version: ${{ matrix.go-version }}
     
-    - name: download dependencies
-      run: go mod download
+    # - name: download dependencies
+    #   run: go mod download
 
     - name: Run linters
       uses: golangci/golangci-lint-action@v3
@@ -42,8 +42,8 @@ jobs:
       with:
         go-version: ${{ matrix.go-version }}
     
-    - name: download dependencies
-      run: go mod download
+    # - name: download dependencies
+    #   run: go mod download
       
     - name: Build
       run: go build -v ./...
@@ -62,8 +62,8 @@ jobs:
       with:
         go-version: ${{ matrix.go-version }}
     
-    - name: download dependencies
-      run: go mod download
+    # - name: download dependencies
+    #   run: go mod download
       
     - name: Test
       run: go test -v ./...
@@ -82,8 +82,8 @@ jobs:
       with:
         go-version: ${{ matrix.go-version }}
     
-    - name: download dependencies
-      run: go mod download
+    # - name: download dependencies
+    #   run: go mod download
       
     - name: Calc coverage
       run: |
