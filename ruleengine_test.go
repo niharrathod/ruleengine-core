@@ -222,7 +222,7 @@ func TestCreateRuleEngine(t *testing.T) {
 							},
 						},
 						"HotelBooking": {
-							Operator:    EqualOpearator,
+							Operator:    EqualOperator,
 							OperandType: BoolType,
 							Operands: []*Operand{
 								{

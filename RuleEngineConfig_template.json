@@ -7,7 +7,7 @@
         "conditionType1": {
             "operator": "> | >= | < | <= | == | != | contain",
             "operandType": "string | int | float | bool",
-            "opearands": [
+            "operands": [
                 {
                     "operandAs": "field",
                     "val": "fieldname"
@@ -21,7 +21,7 @@
         "conditionType2": {
             "operator": "> | >= | < | <= | == | != | contain",
             "operandType": "string | int | float | bool",
-            "opearands": [
+            "operands": [
                 {
                     "operandAs": "field",
                     "val": "fieldname"

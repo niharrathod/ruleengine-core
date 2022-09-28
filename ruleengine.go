@@ -1,4 +1,4 @@
-// rulengine-core is a strickly typed rule engine library, provding a simple interface to create ruleengine and evaluate rule for given input. 
+// rulengine-core is a strickly typed rule engine library, provding a simple interface to create ruleengine and evaluate rule for given input.
 package ruleenginecore
 
 import "sort"
@@ -95,11 +95,11 @@ func prepareEvaluatorTree(cond *Condition, customConditions map[string]*Conditio
 			return &greaterEvaluator{operandType: custCondition.OperandType, operands: custCondition.Operands}
 		case GreaterEqualOperator:
 			return &greaterEqualEvaluator{operandType: custCondition.OperandType, operands: custCondition.Operands}
-		case LessOpeartor:
+		case LessOperator:
 			return &lessEvaluator{operandType: custCondition.OperandType, operands: custCondition.Operands}
-		case LessEqualOpeartor:
+		case LessEqualOperator:
 			return &lessEqualEvaluator{operandType: custCondition.OperandType, operands: custCondition.Operands}
-		case EqualOpearator:
+		case EqualOperator:
 			return &equalEvaluator{operandType: custCondition.OperandType, operands: custCondition.Operands}
 		case NotEqualOperator:
 			return &notEqualEvaluator{operandType: custCondition.OperandType, operands: custCondition.Operands}
@@ -114,13 +114,13 @@ func prepareEvaluatorTree(cond *Condition, customConditions map[string]*Conditio
 // Evaluate the input based on options
 // example,
 //
-//  1. Evaludate(input, ruleenginecore.EvaluateOptions().Complete())
+//  1. Evaluate(input, ruleenginecore.EvaluateOptions().Complete())
 //     this would evaluate all  rules and returns output as a slice of succeeded rule result.
 //
-//  2. Evaludate(input, ruleenginecore.EvaluateOptions().AscendingPriorityBased(5))
+//  2. Evaluate(input, ruleenginecore.EvaluateOptions().AscendingPriorityBased(5))
 //     this would evaluate rules in ascending priority order (ex : 1,2,3...) and returns top 5 succeeded rule result
 //
-//  3. Evaludate(input, ruleenginecore.EvaluateOptions().DescendingPriorityBased(5))
+//  3. Evaluate(input, ruleenginecore.EvaluateOptions().DescendingPriorityBased(5))
 //     this would evaluate rules in descending priority order (ex: 10,9,8...) and returns top 5 succeeded rule result
 func (re *ruleEngine) Evaluate(input Input, op *evaluateOption) ([]*Output, *RuleEngineError) {
 	inputVals, err := input.Validate(re.fields)

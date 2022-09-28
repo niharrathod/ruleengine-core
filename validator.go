@@ -7,7 +7,7 @@ import (
 var validValueTypeMap = map[string]bool{IntType: true, FloatType: true, BoolType: true, StringType: true}
 var printableValidValueType string
 
-var validOperatorMap = map[string]bool{GreaterOperator: true, GreaterEqualOperator: true, LessOpeartor: true, LessEqualOpeartor: true, EqualOpearator: true, NotEqualOperator: true, ContainOperator: true}
+var validOperatorMap = map[string]bool{GreaterOperator: true, GreaterEqualOperator: true, LessOperator: true, LessEqualOperator: true, EqualOperator: true, NotEqualOperator: true, ContainOperator: true}
 
 func init() {
 	validFields := []string{}
@@ -72,7 +72,7 @@ func (c *ConditionType) validate(name string, fs Fields) *RuleEngineError {
 		}
 	}
 
-	if c.Operator == EqualOpearator || c.Operator == NotEqualOperator {
+	if c.Operator == EqualOperator || c.Operator == NotEqualOperator {
 		if len(c.Operands) != 2 {
 			return NewError(ErrCodeInvalidOperandsLength, "For condition:"+name, c.Operator+" operator expects exactly two operands")
 		}
@@ -98,7 +98,7 @@ func (c *ConditionType) validate(name string, fs Fields) *RuleEngineError {
 		}
 	}
 
-	if c.Operator == GreaterOperator || c.Operator == GreaterEqualOperator || c.Operator == LessOpeartor || c.Operator == LessEqualOpeartor {
+	if c.Operator == GreaterOperator || c.Operator == GreaterEqualOperator || c.Operator == LessOperator || c.Operator == LessEqualOperator {
 
 		if len(c.Operands) != 2 {
 			return NewError(ErrCodeInvalidOperandsLength, "condition:"+name, c.Operator+" operator expects exactly two operands")
@@ -130,7 +130,7 @@ func (c *ConditionType) validate(name string, fs Fields) *RuleEngineError {
 
 // validating rule for following
 // 1. valid condition logical operator ( 'and' | 'or' )
-// 2. validate innterCondition for either logical condition or customConditionTypes
+// 2. validate innerCondition for either logical condition or customConditionTypes
 func (r *Rule) validate(name string, custConditionType map[string]*ConditionType) *RuleEngineError {
 	return validateCondition(name, r.RootCondition, custConditionType)
 }
@@ -140,7 +140,7 @@ func validateCondition(name string, c *Condition, custConditionType map[string]*
 	if c.ConditionType == OrOperator || c.ConditionType == AndOperator {
 
 		if len(c.SubConditions) < 2 {
-			return NewError(ErrCodeInvalidSubConditionCount, "rule:"+name, "conditionType:"+c.ConditionType+" expects atleast 2 subconditions")
+			return NewError(ErrCodeInvalidSubConditionCount, "rule:"+name, "conditionType:"+c.ConditionType+" expects at-least 2 sub-conditions")
 		}
 
 		for _, cond := range c.SubConditions {
@@ -154,7 +154,7 @@ func validateCondition(name string, c *Condition, custConditionType map[string]*
 	if c.ConditionType == NegationOperator {
 
 		if len(c.SubConditions) != 1 {
-			return NewError(ErrCodeInvalidSubConditionCount, "rule:"+name, "conditionType:"+c.ConditionType+" expects exactly one subcondition")
+			return NewError(ErrCodeInvalidSubConditionCount, "rule:"+name, "conditionType:"+c.ConditionType+" expects exactly one sub-condition")
 		}
 
 		for _, cond := range c.SubConditions {

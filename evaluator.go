@@ -70,7 +70,7 @@ func (lt *lessEvaluator) evaluate(input typedValueMap) bool {
 	if lt.operandType == FloatType {
 		return lesser[float64](input, lt.operands)
 	}
-	panic("Invalid operandType:" + lt.operandType + " for '" + LessOpeartor + "' operator")
+	panic("Invalid operandType:" + lt.operandType + " for '" + LessOperator + "' operator")
 }
 
 type lessEqualEvaluator customEvaluator
@@ -82,7 +82,7 @@ func (lte *lessEqualEvaluator) evaluate(input typedValueMap) bool {
 	if lte.operandType == FloatType {
 		return lesserAndEqual[float64](input, lte.operands)
 	}
-	panic("Invalid operandType:" + lte.operandType + " for '" + LessEqualOpeartor + "' operator")
+	panic("Invalid operandType:" + lte.operandType + " for '" + LessEqualOperator + "' operator")
 }
 
 type equalEvaluator customEvaluator
@@ -100,7 +100,7 @@ func (eq *equalEvaluator) evaluate(input typedValueMap) bool {
 	if eq.operandType == StringType {
 		return equal[string](input, eq.operands)
 	}
-	panic("Invalid operandType:" + eq.operandType + " for '" + EqualOpearator + "' operator")
+	panic("Invalid operandType:" + eq.operandType + " for '" + EqualOperator + "' operator")
 }
 
 type notEqualEvaluator customEvaluator

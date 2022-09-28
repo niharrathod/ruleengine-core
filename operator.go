@@ -7,9 +7,9 @@ import (
 const (
 	GreaterOperator      = ">"
 	GreaterEqualOperator = ">="
-	LessOpeartor         = "<"
-	LessEqualOpeartor    = "<="
-	EqualOpearator       = "=="
+	LessOperator         = "<"
+	LessEqualOperator    = "<="
+	EqualOperator        = "=="
 	NotEqualOperator     = "!="
 	ContainOperator      = "contain"
 
