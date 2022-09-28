@@ -9,7 +9,7 @@ type Input map[string]string
 // defines an output of a successful rule evaluation
 type Output struct {
 	Rulename string `json:"rulename"`
-	Priority int    `json:"prority"`
+	Priority int    `json:"priority"`
 	// the same result as an entity defined as part rule engine config for every rule.
 	Result map[string]any `json:"result"`
 }
@@ -60,7 +60,7 @@ func (op *Operand) getValue(input typedValueMap) any {
 type ConditionType struct {
 	Operator    string     `json:"operator"`
 	OperandType string     `json:"operandType"`
-	Operands    []*Operand `json:"opearands"`
+	Operands    []*Operand `json:"operands"`
 }
 
 type Condition struct {
@@ -69,7 +69,7 @@ type Condition struct {
 }
 
 type Rule struct {
-	Priority      int            `json:"prority"`
+	Priority      int            `json:"priority"`
 	RootCondition *Condition     `json:"condition"`
 	Result        map[string]any `json:"result"`
 }

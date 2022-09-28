@@ -145,16 +145,13 @@ func Test_logicalEvaluator_evaluate(t *testing.T) {
 
 			defer func() {
 				r := recover()
-				// dont want panic and recover gave nil as expected
 				if !tt.wantPanic && r == nil {
 					return
 				}
-				// want panic and recover return non nil so we panic as expected
 				if tt.wantPanic && r != nil {
 					return
 				}
 
-				// either wantPanic and didn't panic or don't wantPanic and paniced.
 				t.Errorf("logicalEvaluator.evaluate() = %v, want %v isPanic %v", "Panic", tt.want, tt.wantPanic)
 			}()
 
@@ -358,16 +355,13 @@ func Test_greaterEvaluator_evaluate(t *testing.T) {
 
 			defer func() {
 				r := recover()
-				// dont want panic and recover gave nil as expected
 				if !tt.wantPanic && r == nil {
 					return
 				}
-				// want panic and recover return non nil so we panic as expected
 				if tt.wantPanic && r != nil {
 					return
 				}
 
-				// either wantPanic and didn't panic or don't wantPanic and paniced.
 				t.Errorf("greaterEvaluator.evaluate() = %v, want %v isPanic %v", "Panic", tt.want, tt.wantPanic)
 			}()
 
@@ -570,16 +564,13 @@ func Test_greaterEqualEvaluator_evaluate(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			defer func() {
 				r := recover()
-				// dont want panic and recover gave nil as expected
 				if !tt.wantPanic && r == nil {
 					return
 				}
-				// want panic and recover return non nil so we panic as expected
 				if tt.wantPanic && r != nil {
 					return
 				}
 
-				// either wantPanic and didn't panic or don't wantPanic and paniced.
 				t.Errorf("greaterEqualEvaluator.evaluate() = %v, want %v isPanic %v", "Panic", tt.want, tt.wantPanic)
 			}()
 
@@ -783,16 +774,13 @@ func Test_lessEvaluator_evaluate(t *testing.T) {
 
 			defer func() {
 				r := recover()
-				// dont want panic and recover gave nil as expected
 				if !tt.wantPanic && r == nil {
 					return
 				}
-				// want panic and recover return non nil so we panic as expected
 				if tt.wantPanic && r != nil {
 					return
 				}
 
-				// either wantPanic and didn't panic or don't wantPanic and paniced.
 				t.Errorf("lessEvaluator.evaluate() = %v, want %v isPanic %v", "Panic", tt.want, tt.wantPanic)
 			}()
 
@@ -995,16 +983,13 @@ func Test_lessEqualEvaluator_evaluate(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			defer func() {
 				r := recover()
-				// dont want panic and recover gave nil as expected
 				if !tt.wantPanic && r == nil {
 					return
 				}
-				// want panic and recover return non nil so we panic as expected
 				if tt.wantPanic && r != nil {
 					return
 				}
 
-				// either wantPanic and didn't panic or don't wantPanic and paniced.
 				t.Errorf("lessEqualEvaluator.evaluate() = %v, want %v isPanic %v", "Panic", tt.want, tt.wantPanic)
 			}()
 
@@ -1341,16 +1326,13 @@ func Test_equalEvaluator_evaluate(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			defer func() {
 				r := recover()
-				// dont want panic and recover gave nil as expected
 				if !tt.wantPanic && r == nil {
 					return
 				}
-				// want panic and recover return non nil so we panic as expected
 				if tt.wantPanic && r != nil {
 					return
 				}
 
-				// either wantPanic and didn't panic or don't wantPanic and panicked.
 				t.Errorf("equalEvaluator.evaluate() = %v, want %v isPanic %v", "Panic", tt.want, tt.wantPanic)
 			}()
 			eq := &equalEvaluator{
@@ -1686,16 +1668,13 @@ func Test_notEqualEvaluator_evaluate(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			defer func() {
 				r := recover()
-				// dont want panic and recover gave nil as expected
 				if !tt.wantPanic && r == nil {
 					return
 				}
-				// want panic and recover return non nil so we panic as expected
 				if tt.wantPanic && r != nil {
 					return
 				}
 
-				// either wantPanic and didn't panic or don't wantPanic and panicked.
 				t.Errorf("notEqualEvaluator.evaluate() = %v, want %v isPanic %v", "Panic", tt.want, tt.wantPanic)
 			}()
 			neq := &notEqualEvaluator{
@@ -1815,16 +1794,13 @@ func Test_containEvaluator_evaluate(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			defer func() {
 				r := recover()
-				// dont want panic and recover gave nil as expected
 				if !tt.wantPanic && r == nil {
 					return
 				}
-				// want panic and recover return non nil so we panic as expected
 				if tt.wantPanic && r != nil {
 					return
 				}
 
-				// either wantPanic and didn't panic or don't wantPanic and panicked.
 				t.Errorf("containEvaluator.evaluate() = %v, want %v isPanic %v", "Panic", tt.want, tt.wantPanic)
 			}()
 			ce := &containEvaluator{

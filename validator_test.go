@@ -78,7 +78,7 @@ func TestFields_validate(t *testing.T) {
 		},
 		{
 			name: "ValidNameAndType",
-			fs:   Fields{"dog": "int", "cat": "strin"},
+			fs:   Fields{"dog": "int", "cat": "invalid"},
 			wantErr: &RuleEngineError{
 				ErrCode: ErrCodeInvalidValueType,
 			},
@@ -208,7 +208,7 @@ func TestConditionType_validate(t *testing.T) {
 		},
 		{
 			name: "ValidEqual",
-			conditionType: ConditionType{Operator: EqualOpearator,
+			conditionType: ConditionType{Operator: EqualOperator,
 				OperandType: StringType,
 				Operands:    []*Operand{{OperandAs: OperandAsField, Val: "story"}, {OperandAs: OperandAsField, Val: "story"}}},
 
@@ -217,7 +217,7 @@ func TestConditionType_validate(t *testing.T) {
 		},
 		{
 			name: "InvalidEqualOperandLength",
-			conditionType: ConditionType{Operator: EqualOpearator,
+			conditionType: ConditionType{Operator: EqualOperator,
 				OperandType: StringType,
 				Operands:    []*Operand{{OperandAs: OperandAsField, Val: "story"}}},
 
@@ -228,7 +228,7 @@ func TestConditionType_validate(t *testing.T) {
 		},
 		{
 			name: "InvalidEqualOperandType",
-			conditionType: ConditionType{Operator: EqualOpearator,
+			conditionType: ConditionType{Operator: EqualOperator,
 				OperandType: "asdf",
 				Operands:    []*Operand{{OperandAs: OperandAsField, Val: "story"}, {OperandAs: OperandAsField, Val: "story"}}},
 
@@ -239,7 +239,7 @@ func TestConditionType_validate(t *testing.T) {
 		},
 		{
 			name: "InvalidEqualOperandValueType",
-			conditionType: ConditionType{Operator: EqualOpearator,
+			conditionType: ConditionType{Operator: EqualOperator,
 				OperandType: IntType,
 				Operands:    []*Operand{{OperandAs: OperandAsField, Val: "story"}, {OperandAs: OperandAsField, Val: "story"}}},
 
@@ -250,7 +250,7 @@ func TestConditionType_validate(t *testing.T) {
 		},
 		{
 			name: "InvalidEqualConstantValue",
-			conditionType: ConditionType{Operator: EqualOpearator,
+			conditionType: ConditionType{Operator: EqualOperator,
 				OperandType: IntType,
 				Operands:    []*Operand{{OperandAs: OperandAsField, Val: "count"}, {OperandAs: OperandAsConstant, Val: "asdf"}}},
 
@@ -261,7 +261,7 @@ func TestConditionType_validate(t *testing.T) {
 		},
 		{
 			name: "InvalidEqualOperandAs",
-			conditionType: ConditionType{Operator: EqualOpearator,
+			conditionType: ConditionType{Operator: EqualOperator,
 				OperandType: IntType,
 				Operands:    []*Operand{{OperandAs: "asdf", Val: "count"}, {OperandAs: OperandAsConstant, Val: "asdf"}}},
 
