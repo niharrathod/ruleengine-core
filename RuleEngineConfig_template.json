@@ -1,0 +1,75 @@
+{
+    "fields": {
+        "fieldname": "valuetype",
+        "bookingAmount": "string | int | float | bool"
+    },
+    "conditionTypes": {
+        "conditionType1": {
+            "operator": "> | >= | < | <= | == | != | contain",
+            "operandType": "string | int | float | bool",
+            "opearands": [
+                {
+                    "operandAs": "field",
+                    "val": "fieldname"
+                },
+                {
+                    "operandAs": "constant",
+                    "val": "10"
+                }
+            ]
+        },
+        "conditionType2": {
+            "operator": "> | >= | < | <= | == | != | contain",
+            "operandType": "string | int | float | bool",
+            "opearands": [
+                {
+                    "operandAs": "field",
+                    "val": "fieldname"
+                },
+                {
+                    "operandAs": "constant",
+                    "val": "10"
+                }
+            ]
+        }
+    },
+    "rules": {
+        "rule1": {
+            "priority": 10,
+            "condition": {
+                "conditionType": "or | and | not",
+                "subConditions": [
+                    {
+                        "conditionType": "or | and | not",
+                        "subConditions": [
+                            {
+                                "conditionType": "conditionType1",
+                                "subConditions": []
+                            },
+                            {
+                                "conditionType": "conditionType2",
+                                "subConditions": []
+                            }
+                        ]
+                    },
+                    {
+                        "conditionType": "or | and | not",
+                        "subConditions": [
+                            {
+                                "conditionType": "conditionType3",
+                                "subConditions": []
+                            },
+                            {
+                                "conditionType": "conditionType4",
+                                "subConditions": []
+                            }
+                        ]
+                    }
+                ]
+            },
+            "result": {
+                "anykey": "anyvalue"
+            }
+        }
+    }
+}
