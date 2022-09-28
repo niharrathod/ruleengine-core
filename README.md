@@ -7,4 +7,4 @@
 
 ## Overview
 
-ruleengine-core is a strictly typed rule engine library, provides a simple interface to create rule engine and evaluate rules for given input.
+ruleengine-core is a strictly typed rule engine library, provides a simple interface to create ruleengine and evaluate rules for given input. It decouples and abstract-out logic for rule setup and rule evaluation. You can store rules(RuleEngineConfig) as a JSON in a store outside of core rule engine logic, which makes it easy for rule engine versioning.
