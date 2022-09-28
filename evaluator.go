@@ -1,4 +1,4 @@
-package ruleengine
+package ruleenginecore
 
 type Evaluator interface {
 	evaluate(input typedValueMap) bool

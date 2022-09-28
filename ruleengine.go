@@ -1,5 +1,5 @@
 // rulengine-core is a strickly typed rule engine library, provding a simple interface to create ruleengine and evaluate rule for given input. 
-package ruleengine
+package ruleenginecore
 
 import "sort"
 

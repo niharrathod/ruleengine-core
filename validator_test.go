@@ -1,4 +1,4 @@
-package ruleengine
+package ruleenginecore
 
 import (
 	"reflect"
