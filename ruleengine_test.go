@@ -1,6 +1,7 @@
 package ruleenginecore
 
 import (
+	"context"
 	"reflect"
 	"testing"
 )
@@ -547,13 +548,274 @@ func Test_ruleEngine_Evaluate(t *testing.T) {
 				ruleMap: tt.fields.ruleMap,
 				rules:   tt.fields.rules,
 			}
-			got, gotErr := re.Evaluate(tt.args.input, tt.args.op)
+			got, gotErr := re.Evaluate(context.TODO(), tt.args.input, tt.args.op)
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("ruleEngine.Evaluate() got = %v, want %v", got, tt.want)
 			}
 			if tt.wantErr != nil && tt.wantErr.ErrCode != gotErr.ErrCode {
 				t.Errorf("ruleEngine.Evaluate() got1 = %v, want %v", gotErr, tt.wantErr)
 			}
+		})
+	}
+}
+
+func Test_ruleEngine_Evaluate_ContextAware(t *testing.T) {
+	type fields struct {
+		fields  map[string]string
+		ruleMap map[string]*rule
+		rules   []*rule
+	}
+	type args struct {
+		input Input
+		op    *evaluateOption
+	}
+	tests := []struct {
+		name         string
+		fields       fields
+		args         args
+		ctxCancelled bool
+		want         []*Output
+		wantErr      *RuleEngineError
+	}{
+		{
+			name: "EvaluateComplete_Normal",
+			fields: fields{
+				fields: map[string]string{
+					"totalAmount":    IntType,
+					"IsHotelBooking": BoolType,
+					"PaxCount":       IntType,
+				},
+				ruleMap: map[string]*rule{
+					"Discount10": discount10TestRule,
+					"Discount5":  discount5TestRule,
+					"Discount2":  discount2TestRule,
+				},
+				rules: []*rule{
+					discount10TestRule,
+					discount5TestRule,
+					discount2TestRule,
+				},
+			},
+			args: args{
+				input: Input{
+					"totalAmount":    "25000",
+					"IsHotelBooking": "true",
+					"PaxCount":       "10",
+				},
+				op: EvaluateOptions().Complete(),
+			},
+			ctxCancelled: false,
+			wantErr:      nil,
+			want: []*Output{
+				{
+					Rulename: "Discount10",
+					Priority: 1,
+					Result:   discount10TestRule.result,
+				},
+				{
+					Rulename: "Discount2",
+					Priority: 3,
+					Result:   discount2TestRule.result,
+				},
+			},
+		},
+		{
+			name: "EvaluateComplete_CtxCancelled",
+			fields: fields{
+				fields: map[string]string{
+					"totalAmount":    IntType,
+					"IsHotelBooking": BoolType,
+					"PaxCount":       IntType,
+				},
+				ruleMap: map[string]*rule{
+					"Discount10": discount10TestRule,
+					"Discount5":  discount5TestRule,
+					"Discount2":  discount2TestRule,
+				},
+				rules: []*rule{
+					discount10TestRule,
+					discount5TestRule,
+					discount2TestRule,
+				},
+			},
+			args: args{
+				input: Input{
+					"totalAmount":    "25000",
+					"IsHotelBooking": "true",
+					"PaxCount":       "10",
+				},
+				op: EvaluateOptions().Complete(),
+			},
+			ctxCancelled: true,
+			wantErr: &RuleEngineError{
+				ErrCode: ErrCodeContextCancelled,
+			},
+			want: nil,
+		},
+		{
+			name: "AscendingPriorityEvaluate_Normal",
+			fields: fields{
+				fields: map[string]string{
+					"totalAmount":    IntType,
+					"IsHotelBooking": BoolType,
+					"PaxCount":       IntType,
+				},
+				ruleMap: map[string]*rule{
+					"Discount10": discount10TestRule,
+					"Discount5":  discount5TestRule,
+					"Discount2":  discount2TestRule,
+				},
+				rules: []*rule{
+					discount10TestRule,
+					discount5TestRule,
+					discount2TestRule,
+				},
+			},
+			args: args{
+				input: Input{
+					"totalAmount":    "25000",
+					"IsHotelBooking": "true",
+					"PaxCount":       "10",
+				},
+				op: EvaluateOptions().AscendingPriorityBased(1),
+			},
+			ctxCancelled: false,
+			wantErr:      nil,
+			want: []*Output{
+				{
+					Rulename: "Discount10",
+					Priority: 1,
+					Result:   discount10TestRule.result,
+				},
+			},
+		},
+		{
+			name: "AscendingPriorityEvaluate_ctxCancelled",
+			fields: fields{
+				fields: map[string]string{
+					"totalAmount":    IntType,
+					"IsHotelBooking": BoolType,
+					"PaxCount":       IntType,
+				},
+				ruleMap: map[string]*rule{
+					"Discount10": discount10TestRule,
+					"Discount5":  discount5TestRule,
+					"Discount2":  discount2TestRule,
+				},
+				rules: []*rule{
+					discount10TestRule,
+					discount5TestRule,
+					discount2TestRule,
+				},
+			},
+			args: args{
+				input: Input{
+					"totalAmount":    "25000",
+					"IsHotelBooking": "true",
+					"PaxCount":       "10",
+				},
+				op: EvaluateOptions().AscendingPriorityBased(1),
+			},
+			ctxCancelled: true,
+			wantErr: &RuleEngineError{
+				ErrCode: ErrCodeContextCancelled,
+			},
+			want: nil,
+		},
+		{
+			name: "DescendingPriorityEvaluate",
+			fields: fields{
+				fields: map[string]string{
+					"totalAmount":    IntType,
+					"IsHotelBooking": BoolType,
+					"PaxCount":       IntType,
+				},
+				ruleMap: map[string]*rule{
+					"Discount10": discount10TestRule,
+					"Discount5":  discount5TestRule,
+					"Discount2":  discount2TestRule,
+				},
+				rules: []*rule{
+					discount10TestRule,
+					discount5TestRule,
+					discount2TestRule,
+				},
+			},
+			args: args{
+				input: Input{
+					"totalAmount":    "25000",
+					"IsHotelBooking": "true",
+					"PaxCount":       "10",
+				},
+				op: EvaluateOptions().DescendingPriorityBased(1),
+			},
+			ctxCancelled: false,
+			wantErr:      nil,
+			want: []*Output{
+				{
+					Rulename: "Discount2",
+					Priority: 3,
+					Result:   discount2TestRule.result,
+				},
+			},
+		},
+		{
+			name: "DescendingPriorityEvaluate",
+			fields: fields{
+				fields: map[string]string{
+					"totalAmount":    IntType,
+					"IsHotelBooking": BoolType,
+					"PaxCount":       IntType,
+				},
+				ruleMap: map[string]*rule{
+					"Discount10": discount10TestRule,
+					"Discount5":  discount5TestRule,
+					"Discount2":  discount2TestRule,
+				},
+				rules: []*rule{
+					discount10TestRule,
+					discount5TestRule,
+					discount2TestRule,
+				},
+			},
+			args: args{
+				input: Input{
+					"totalAmount":    "25000",
+					"IsHotelBooking": "true",
+					"PaxCount":       "10",
+				},
+				op: EvaluateOptions().DescendingPriorityBased(1),
+			},
+			ctxCancelled: true,
+			wantErr: &RuleEngineError{
+				ErrCode: ErrCodeContextCancelled,
+			},
+			want: nil,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			re := &ruleEngine{
+				fields:  tt.fields.fields,
+				ruleMap: tt.fields.ruleMap,
+				rules:   tt.fields.rules,
+			}
+			ctx, cancel := context.WithCancel(context.Background())
+			if tt.ctxCancelled {
+				cancel()
+			} else {
+				defer cancel()
+			}
+			got, gotErr := re.Evaluate(ctx, tt.args.input, tt.args.op)
+
+			if tt.wantErr == nil && gotErr == nil && reflect.DeepEqual(got, tt.want) {
+				return
+			}
+			if tt.wantErr != nil && gotErr != nil && tt.wantErr.ErrCode == gotErr.ErrCode {
+				return
+			}
+
+			t.Errorf("ruleEngine.Evaluate() got %v gotErr %v, want %v wantErr %v", got, gotErr, tt.want, tt.wantErr)
 		})
 	}
 }
@@ -681,13 +943,128 @@ func Test_ruleEngine_RulenameBasedEvaluate(t *testing.T) {
 				ruleMap: tt.fields.ruleMap,
 				rules:   tt.fields.rules,
 			}
-			got, gotErr := re.EvaluateHavingRulename(tt.args.input, tt.args.rulename)
+			got, gotErr := re.EvaluateHavingRulename(context.TODO(), tt.args.input, tt.args.rulename)
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("ruleEngine.RulenameBasedEvaluate() got = %v, want %v", got, tt.want)
 			}
 			if tt.wantErr != nil && gotErr.ErrCode != tt.wantErr.ErrCode {
 				t.Errorf("ruleEngine.RulenameBasedEvaluate() gotErr = %v, wantErr %v", gotErr, tt.wantErr)
 			}
+		})
+	}
+}
+
+func Test_ruleEngine_RulenameBasedEvaluate_ContextAware(t *testing.T) {
+	type fields struct {
+		fields  map[string]string
+		ruleMap map[string]*rule
+		rules   []*rule
+	}
+	type args struct {
+		input    Input
+		rulename string
+	}
+	tests := []struct {
+		name         string
+		fields       fields
+		args         args
+		ctxCancelled bool
+		want         *Output
+		wantErr      *RuleEngineError
+	}{
+		{
+			name: "valid",
+			fields: fields{
+				fields: map[string]string{
+					"totalAmount":    IntType,
+					"IsHotelBooking": BoolType,
+					"PaxCount":       IntType,
+				},
+				ruleMap: map[string]*rule{
+					"Discount10": discount10TestRule,
+					"Discount5":  discount5TestRule,
+					"Discount2":  discount2TestRule,
+				},
+				rules: []*rule{
+					discount10TestRule,
+					discount5TestRule,
+					discount2TestRule,
+				},
+			},
+			args: args{
+				input: Input{
+					"totalAmount":    "25000",
+					"IsHotelBooking": "true",
+					"PaxCount":       "10",
+				},
+				rulename: "Discount10",
+			},
+			ctxCancelled: false,
+			wantErr:      nil,
+			want: &Output{
+				Rulename: "Discount10",
+				Priority: 1,
+				Result:   discount10TestRule.result,
+			},
+		},
+		{
+			name: "valid",
+			fields: fields{
+				fields: map[string]string{
+					"totalAmount":    IntType,
+					"IsHotelBooking": BoolType,
+					"PaxCount":       IntType,
+				},
+				ruleMap: map[string]*rule{
+					"Discount10": discount10TestRule,
+					"Discount5":  discount5TestRule,
+					"Discount2":  discount2TestRule,
+				},
+				rules: []*rule{
+					discount10TestRule,
+					discount5TestRule,
+					discount2TestRule,
+				},
+			},
+			args: args{
+				input: Input{
+					"totalAmount":    "25000",
+					"IsHotelBooking": "true",
+					"PaxCount":       "10",
+				},
+				rulename: "Discount10",
+			},
+			ctxCancelled: true,
+			wantErr: &RuleEngineError{
+				ErrCode: ErrCodeContextCancelled,
+			},
+			want: nil,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			re := &ruleEngine{
+				fields:  tt.fields.fields,
+				ruleMap: tt.fields.ruleMap,
+				rules:   tt.fields.rules,
+			}
+			ctx, cancel := context.WithCancel(context.Background())
+			if tt.ctxCancelled {
+				cancel()
+			} else {
+				defer cancel()
+			}
+
+			got, gotErr := re.EvaluateHavingRulename(ctx, tt.args.input, tt.args.rulename)
+
+			if tt.wantErr == nil && gotErr == nil && reflect.DeepEqual(got, tt.want) {
+				return
+			}
+			if tt.wantErr != nil && gotErr != nil && tt.wantErr.ErrCode == gotErr.ErrCode {
+				return
+			}
+
+			t.Errorf("ruleEngine.RulenameBasedEvaluate() got %v gotErr %v, want %v wantErr %v", got, gotErr, tt.want, tt.wantErr)
 		})
 	}
 }
@@ -737,9 +1114,84 @@ func Test_rule_evaluate(t *testing.T) {
 				rootEvaluator: tt.r.rootEvaluator,
 				result:        tt.r.result,
 			}
-			if got := r.evaluate(tt.args.input); got != tt.want {
+			if got, _ := r.evaluate(context.TODO(), tt.args.input); got != tt.want {
 				t.Errorf("rule.evaluate() = %v, want %v", got, tt.want)
 			}
+		})
+	}
+}
+
+func Test_rule_evaluateContextAware(t *testing.T) {
+	type args struct {
+		input typedValueMap
+	}
+	tests := []struct {
+		name         string
+		r            rule
+		args         args
+		ctxCancelled bool
+		want         bool
+		wantErr      *RuleEngineError
+	}{
+		{
+			name: "contextCancelled",
+			r: rule{
+				name:          "TestRule1",
+				priority:      1,
+				rootEvaluator: trueEvaluator,
+				result:        map[string]any{},
+			},
+			args: args{
+				input: typedValueMap{},
+			},
+			ctxCancelled: true,
+			wantErr: &RuleEngineError{
+				ErrCode: ErrCodeContextCancelled,
+			},
+		},
+		{
+			name: "doNotCancelContext",
+			r: rule{
+				name:          "TestRule1",
+				priority:      1,
+				rootEvaluator: trueEvaluator,
+				result:        map[string]any{},
+			},
+			args: args{
+				input: typedValueMap{},
+			},
+			ctxCancelled: false,
+			want:         true,
+			wantErr:      nil,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			r := &rule{
+				name:          tt.r.name,
+				priority:      tt.r.priority,
+				rootEvaluator: tt.r.rootEvaluator,
+				result:        tt.r.result,
+			}
+
+			ctx, cancel := context.WithCancel(context.Background())
+			if tt.ctxCancelled {
+				cancel()
+			} else {
+				defer cancel()
+			}
+
+			got, gotErr := r.evaluate(ctx, tt.args.input)
+
+			if tt.wantErr == nil && got == tt.want && gotErr == nil {
+				return
+			}
+
+			if tt.wantErr != nil && gotErr != nil && gotErr.ErrCode == tt.wantErr.ErrCode {
+				return
+			}
+
+			t.Errorf("rule.evaluate() got %v  gotErr %v, want %v wantErr %v", got, gotErr, tt.want, tt.wantErr)
 		})
 	}
 }

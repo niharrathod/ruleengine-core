@@ -109,6 +109,7 @@ const (
 	ErrCodeFailedParsingInput
 	ErrCodeRuleNotFound
 	ErrCodeInvalidEvaluateOperations
+	ErrCodeContextCancelled
 )
 
 var errCodeToMessage = map[uint]string{
@@ -124,4 +125,5 @@ var errCodeToMessage = map[uint]string{
 	ErrCodeFailedParsingInput:        "Could not parse input",
 	ErrCodeRuleNotFound:              "Rule not found",
 	ErrCodeInvalidEvaluateOperations: "Invalid evaluate options value n",
+	ErrCodeContextCancelled:          "context is cancelled",
 }

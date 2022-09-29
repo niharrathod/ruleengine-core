@@ -1,7 +1,10 @@
 // rulengine-core is a strickly typed rule engine library, provding a simple interface to create ruleengine and evaluate rule for given input.
 package ruleenginecore
 
-import "sort"
+import (
+	"context"
+	"sort"
+)
 
 const (
 	IntType    = "int"
@@ -23,8 +26,26 @@ type rule struct {
 // <key> : <value> is <fieldname> : <typedvalue>
 type typedValueMap map[string]any
 
-func (r *rule) evaluate(input typedValueMap) bool {
-	return r.rootEvaluator.evaluate(input)
+func (r *rule) evaluate(ctx context.Context, input typedValueMap) (bool, *RuleEngineError) {
+	out := make(chan bool)
+	ctxCancelled := false
+
+	go func(ctx context.Context, input typedValueMap, resultChan chan<- bool) {
+		select {
+		case <-ctx.Done():
+			ctxCancelled = true
+			resultChan <- false
+		default:
+			resultChan <- r.rootEvaluator.evaluate(input)
+		}
+	}(ctx, input, out)
+
+	result := <-out
+
+	if ctxCancelled {
+		return false, NewError(ErrCodeContextCancelled, "ruleEvaluation : "+r.name, "")
+	}
+	return result, nil
 }
 
 type ruleEngine struct {
@@ -38,8 +59,8 @@ type ruleEngine struct {
 }
 
 type RuleEngine interface {
-	Evaluate(input Input, op *evaluateOption) ([]*Output, *RuleEngineError)
-	EvaluateHavingRulename(input Input, rulename string) (*Output, *RuleEngineError)
+	Evaluate(ctx context.Context, input Input, op *evaluateOption) ([]*Output, *RuleEngineError)
+	EvaluateHavingRulename(ctx context.Context, input Input, rulename string) (*Output, *RuleEngineError)
 }
 
 // creates new rule engine with given engine configuration
@@ -122,7 +143,7 @@ func prepareEvaluatorTree(cond *Condition, customConditions map[string]*Conditio
 //
 //  3. Evaluate(input, ruleenginecore.EvaluateOptions().DescendingPriorityBased(5))
 //     this would evaluate rules in descending priority order (ex: 10,9,8...) and returns top 5 succeeded rule result
-func (re *ruleEngine) Evaluate(input Input, op *evaluateOption) ([]*Output, *RuleEngineError) {
+func (re *ruleEngine) Evaluate(ctx context.Context, input Input, op *evaluateOption) ([]*Output, *RuleEngineError) {
 	inputVals, err := input.Validate(re.fields)
 	if err != nil {
 		return nil, err
@@ -137,7 +158,13 @@ func (re *ruleEngine) Evaluate(input Input, op *evaluateOption) ([]*Output, *Rul
 	if !op.considerPriority {
 		for i := 0; i < len(re.rules); i++ {
 			rule := re.rules[i]
-			if rule.evaluate(inputVals) {
+			matched, err := rule.evaluate(ctx, inputVals)
+
+			if err != nil {
+				return nil, err
+			}
+
+			if matched {
 				out := Output{
 					Rulename: rule.name,
 					Priority: rule.priority,
@@ -153,7 +180,12 @@ func (re *ruleEngine) Evaluate(input Input, op *evaluateOption) ([]*Output, *Rul
 	} else if op.ascPriority {
 		for i := 0; i < len(re.rules); i++ {
 			rule := re.rules[i]
-			if rule.evaluate(inputVals) {
+			matched, err := rule.evaluate(ctx, inputVals)
+			if err != nil {
+				return nil, err
+			}
+
+			if matched {
 				out := Output{
 					Rulename: rule.name,
 					Priority: rule.priority,
@@ -173,7 +205,12 @@ func (re *ruleEngine) Evaluate(input Input, op *evaluateOption) ([]*Output, *Rul
 	} else {
 		for i := len(re.rules) - 1; i >= 0; i-- {
 			rule := re.rules[i]
-			if rule.evaluate(inputVals) {
+			matched, err := rule.evaluate(ctx, inputVals)
+			if err != nil {
+				return nil, err
+			}
+
+			if matched {
 				out := Output{
 					Rulename: rule.name,
 					Priority: rule.priority,
@@ -195,14 +232,19 @@ func (re *ruleEngine) Evaluate(input Input, op *evaluateOption) ([]*Output, *Rul
 // Evaluate the input.
 // evaluates only one rule having given rulename
 // returns an error(having error code ErrCodeRuleNotFound) if rule is not found with given rulename.
-func (re *ruleEngine) EvaluateHavingRulename(input Input, rulename string) (*Output, *RuleEngineError) {
+func (re *ruleEngine) EvaluateHavingRulename(ctx context.Context, input Input, rulename string) (*Output, *RuleEngineError) {
 	inputVals, err := input.Validate(re.fields)
 	if err != nil {
 		return nil, err
 	}
 
 	if rule, ok := re.ruleMap[rulename]; ok {
-		if rule.rootEvaluator.evaluate(inputVals) {
+		matched, err := rule.evaluate(ctx, inputVals)
+		if err != nil {
+			return nil, err
+		}
+
+		if matched {
 			result := Output{
 				Rulename: rulename,
 				Priority: rule.priority,
