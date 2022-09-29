@@ -40,13 +40,16 @@ var singleRuleInputTable = []ruleenginecore.Input{
 		"PaxCount":       "10",
 	},
 }
+var result any
 
 func BenchmarkRuleEngineComplete(b *testing.B) {
+	var r any
 	for i, input := range singleRuleInputTable {
 		b.Run(fmt.Sprintf("SingleRule_input_%d", i), func(b *testing.B) {
 			for i := 0; i < b.N; i++ {
-				singleRuleEngine.Evaluate(context.TODO(), input, ruleenginecore.EvaluateOptions().Complete())
+				r, _ = singleRuleEngine.Evaluate(context.TODO(), input, ruleenginecore.EvaluateOptions().Complete())
 			}
 		})
+		result = r
 	}
 }
