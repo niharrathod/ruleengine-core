@@ -6,18 +6,6 @@ import (
 	"testing"
 )
 
-var testOptionComplete *evaluateOption
-var testOptionAscendingOne *evaluateOption
-var testOptionDescendingOne *evaluateOption
-var invalidEvaluateOptions *evaluateOption
-
-func init() {
-	testOptionComplete = EvaluateOptions().Complete()
-	testOptionAscendingOne = EvaluateOptions().AscendingPriorityBased(1)
-	testOptionDescendingOne = EvaluateOptions().DescendingPriorityBased(1)
-	invalidEvaluateOptions = EvaluateOptions().DescendingPriorityBased(0)
-}
-
 var discount10TestRule = &rule{
 	name:     "Discount10",
 	priority: 1,
@@ -336,12 +324,16 @@ func TestCreateRuleEngine(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got, gotErr := New(tt.args.engineConfig)
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("New() got = %v, want %v", got, tt.want)
+
+			if tt.wantErr == nil && gotErr == nil && reflect.DeepEqual(got, tt.want) {
+				return
 			}
-			if tt.wantErr != nil && gotErr.ErrCode != tt.wantErr.ErrCode {
-				t.Errorf("New() got1 = %v, want %v", gotErr, tt.wantErr)
+
+			if tt.wantErr != nil && gotErr != nil && gotErr.ErrCode == tt.wantErr.ErrCode {
+				return
 			}
+
+			t.Errorf("ruleenginecore.New() got %v gotErr %v, want %v wantErr %v", got, gotErr, tt.want, tt.wantErr)
 		})
 	}
 }
@@ -388,7 +380,7 @@ func Test_ruleEngine_Evaluate(t *testing.T) {
 					"IsHotelBooking": "true",
 					"PaxCount":       "10",
 				},
-				op: testOptionComplete,
+				op: EvaluateOptions().Complete(),
 			},
 			wantErr: nil,
 			want: []*Output{
@@ -429,7 +421,7 @@ func Test_ruleEngine_Evaluate(t *testing.T) {
 					"IsHotelBooking": "true",
 					"PaxCount":       "10",
 				},
-				op: testOptionAscendingOne,
+				op: EvaluateOptions().AscendingPriorityBased(1),
 			},
 			wantErr: nil,
 			want: []*Output{
@@ -465,7 +457,7 @@ func Test_ruleEngine_Evaluate(t *testing.T) {
 					"IsHotelBooking": "true",
 					"PaxCount":       "10",
 				},
-				op: testOptionDescendingOne,
+				op: EvaluateOptions().DescendingPriorityBased(1),
 			},
 			wantErr: nil,
 			want: []*Output{
@@ -501,7 +493,7 @@ func Test_ruleEngine_Evaluate(t *testing.T) {
 					"IsHotelBooking": "true",
 					"PaxCount":       "10",
 				},
-				op: testOptionDescendingOne,
+				op: EvaluateOptions().DescendingPriorityBased(1),
 			},
 			wantErr: &RuleEngineError{
 				ErrCode: ErrCodeFailedParsingInput,
@@ -533,7 +525,7 @@ func Test_ruleEngine_Evaluate(t *testing.T) {
 					"IsHotelBooking": "true",
 					"PaxCount":       "10",
 				},
-				op: invalidEvaluateOptions,
+				op: EvaluateOptions().AscendingPriorityBased(0),
 			},
 			wantErr: &RuleEngineError{
 				ErrCode: ErrCodeInvalidEvaluateOperations,
@@ -549,12 +541,16 @@ func Test_ruleEngine_Evaluate(t *testing.T) {
 				rules:   tt.fields.rules,
 			}
 			got, gotErr := re.Evaluate(context.TODO(), tt.args.input, tt.args.op)
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("ruleEngine.Evaluate() got = %v, want %v", got, tt.want)
+
+			if tt.wantErr == nil && gotErr == nil && reflect.DeepEqual(got, tt.want) {
+				return
 			}
-			if tt.wantErr != nil && tt.wantErr.ErrCode != gotErr.ErrCode {
-				t.Errorf("ruleEngine.Evaluate() got1 = %v, want %v", gotErr, tt.wantErr)
+
+			if tt.wantErr != nil && gotErr != nil && gotErr.ErrCode == tt.wantErr.ErrCode {
+				return
 			}
+
+			t.Errorf("ruleEngine.Evaluate() got %v gotErr %v, want %v wantErr %v", got, gotErr, tt.want, tt.wantErr)
 		})
 	}
 }
@@ -944,12 +940,15 @@ func Test_ruleEngine_RulenameBasedEvaluate(t *testing.T) {
 				rules:   tt.fields.rules,
 			}
 			got, gotErr := re.EvaluateHavingRulename(context.TODO(), tt.args.input, tt.args.rulename)
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("ruleEngine.RulenameBasedEvaluate() got = %v, want %v", got, tt.want)
+
+			if tt.wantErr == nil && gotErr == nil && reflect.DeepEqual(got, tt.want) {
+				return
 			}
-			if tt.wantErr != nil && gotErr.ErrCode != tt.wantErr.ErrCode {
-				t.Errorf("ruleEngine.RulenameBasedEvaluate() gotErr = %v, wantErr %v", gotErr, tt.wantErr)
+
+			if tt.wantErr != nil && gotErr != nil && gotErr.ErrCode == tt.wantErr.ErrCode {
+				return
 			}
+			t.Errorf("ruleEngine.RulenameBasedEvaluate() got %v  gotErr %v, want %v wantErr %v", got, gotErr, tt.want, tt.wantErr)
 		})
 	}
 }
