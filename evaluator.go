@@ -40,10 +40,10 @@ func (le *logicalEvaluator) evaluate(input typedValueMap) bool {
 type greaterEvaluator customEvaluator
 
 func (ge *greaterEvaluator) evaluate(input typedValueMap) bool {
-	if ge.operandType == IntType {
+	switch ge.operandType {
+	case IntType:
 		return greater[int64](input, ge.operands)
-	}
-	if ge.operandType == FloatType {
+	case FloatType:
 		return greater[float64](input, ge.operands)
 	}
 	panic("Invalid operandType:" + ge.operandType + " for '" + GreaterOperator + "' operator")
@@ -52,10 +52,10 @@ func (ge *greaterEvaluator) evaluate(input typedValueMap) bool {
 type greaterEqualEvaluator customEvaluator
 
 func (gte *greaterEqualEvaluator) evaluate(input typedValueMap) bool {
-	if gte.operandType == IntType {
+	switch gte.operandType {
+	case IntType:
 		return greaterAndEqual[int64](input, gte.operands)
-	}
-	if gte.operandType == FloatType {
+	case FloatType:
 		return greaterAndEqual[float64](input, gte.operands)
 	}
 	panic("Invalid operandType:" + gte.operandType + " for '" + GreaterEqualOperator + "' operator")
@@ -64,10 +64,11 @@ func (gte *greaterEqualEvaluator) evaluate(input typedValueMap) bool {
 type lessEvaluator customEvaluator
 
 func (lt *lessEvaluator) evaluate(input typedValueMap) bool {
-	if lt.operandType == IntType {
+
+	switch lt.operandType {
+	case IntType:
 		return lesser[int64](input, lt.operands)
-	}
-	if lt.operandType == FloatType {
+	case FloatType:
 		return lesser[float64](input, lt.operands)
 	}
 	panic("Invalid operandType:" + lt.operandType + " for '" + LessOperator + "' operator")
@@ -76,10 +77,10 @@ func (lt *lessEvaluator) evaluate(input typedValueMap) bool {
 type lessEqualEvaluator customEvaluator
 
 func (lte *lessEqualEvaluator) evaluate(input typedValueMap) bool {
-	if lte.operandType == IntType {
+	switch lte.operandType {
+	case IntType:
 		return lesserAndEqual[int64](input, lte.operands)
-	}
-	if lte.operandType == FloatType {
+	case FloatType:
 		return lesserAndEqual[float64](input, lte.operands)
 	}
 	panic("Invalid operandType:" + lte.operandType + " for '" + LessEqualOperator + "' operator")
@@ -88,43 +89,42 @@ func (lte *lessEqualEvaluator) evaluate(input typedValueMap) bool {
 type equalEvaluator customEvaluator
 
 func (eq *equalEvaluator) evaluate(input typedValueMap) bool {
-	if eq.operandType == IntType {
+	switch eq.operandType {
+	case IntType:
 		return equal[int64](input, eq.operands)
-	}
-	if eq.operandType == FloatType {
+	case FloatType:
 		return equal[float64](input, eq.operands)
-	}
-	if eq.operandType == BoolType {
+	case BoolType:
 		return equal[bool](input, eq.operands)
-	}
-	if eq.operandType == StringType {
+	case StringType:
 		return equal[string](input, eq.operands)
 	}
+
 	panic("Invalid operandType:" + eq.operandType + " for '" + EqualOperator + "' operator")
 }
 
 type notEqualEvaluator customEvaluator
 
 func (neq *notEqualEvaluator) evaluate(input typedValueMap) bool {
-	if neq.operandType == IntType {
+	switch neq.operandType {
+	case IntType:
 		return notEqual[int64](input, neq.operands)
-	}
-	if neq.operandType == FloatType {
+	case FloatType:
 		return notEqual[float64](input, neq.operands)
-	}
-	if neq.operandType == BoolType {
+	case BoolType:
 		return notEqual[bool](input, neq.operands)
-	}
-	if neq.operandType == StringType {
+	case StringType:
 		return notEqual[string](input, neq.operands)
 	}
+
 	panic("Invalid operandType:" + neq.operandType + " for '" + NotEqualOperator + "' operator")
 }
 
 type containEvaluator customEvaluator
 
 func (ce *containEvaluator) evaluate(input typedValueMap) bool {
-	if ce.operandType == StringType {
+	switch ce.operandType {
+	case StringType:
 		return contain(input, ce.operands)
 	}
 	panic("Invalid operandType:" + ce.operandType + " for '" + ContainOperator + "' operator")

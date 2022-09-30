@@ -46,7 +46,7 @@ func (fs Fields) validate() *RuleEngineError {
 // 2. valid number of operands for given operator
 // 3. valid operand type for given operator
 // 4. for OperandAsField, match operandType with field type.
-func (c *ConditionType) validate(name string, fs Fields) *RuleEngineError {
+func (c *ConditionType) validateAndPrepTypedValues(name string, fs Fields) *RuleEngineError {
 
 	if _, ok := validOperatorMap[c.Operator]; !ok {
 		return NewError(ErrCodeInvalidOperator, "condition:"+name, c.Operator+" is invalid operator")
@@ -66,7 +66,13 @@ func (c *ConditionType) validate(name string, fs Fields) *RuleEngineError {
 				if err := fs.isValid(operand.Val, c.OperandType); err != nil {
 					return err
 				}
-			} else if operand.OperandAs != OperandAsConstant {
+			} else if operand.OperandAs == OperandAsConstant {
+				if typedValue, err := getTypedValue(operand.Val, c.OperandType); err != nil {
+					return NewError(ErrCodeFailedParsingInput, "condition:"+name, err.Error())
+				} else {
+					operand.typedValue = typedValue
+				}
+			} else {
 				return NewError(ErrCodeInvalidOperandAs, "condition:"+name, operand.OperandAs+" is invalid. valid operandAs are "+OperandAsField+", "+OperandAsConstant)
 			}
 		}
@@ -180,7 +186,7 @@ func (c *RuleEngineConfig) Validate() *RuleEngineError {
 	}
 
 	for conditionName, customCondition := range c.ConditionTypes {
-		if err := customCondition.validate(conditionName, c.Fields); err != nil {
+		if err := customCondition.validateAndPrepTypedValues(conditionName, c.Fields); err != nil {
 			return err
 		}
 	}
@@ -195,7 +201,7 @@ func (c *RuleEngineConfig) Validate() *RuleEngineError {
 }
 
 // validates for mandatory fields and type conversion from string to respective field type
-func (input Input) Validate(fs Fields) (typedValueMap, *RuleEngineError) {
+func (input Input) ValidateAndPrepTypedValues(fs Fields) (typedValueMap, *RuleEngineError) {
 	ret := typedValueMap{}
 	for fieldname, fieldtype := range fs {
 		strVal, found := input[fieldname]
