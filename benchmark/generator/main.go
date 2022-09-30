@@ -329,7 +329,11 @@ func writeJsonToFile(val any, filename string) {
 		os.Exit(1)
 	}
 
-	os.WriteFile("./"+filename, jsonBytes, os.ModePerm)
+	err = os.WriteFile("./"+filename, jsonBytes, os.ModePerm)
+
+	if err != nil {
+		panic(err.Error())
+	}
 }
 
 func fieldGenerate(intCount, floatCount, stringCount, boolCount int) ruleenginecore.Fields {
