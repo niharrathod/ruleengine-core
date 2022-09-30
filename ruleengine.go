@@ -144,7 +144,7 @@ func prepareEvaluatorTree(cond *Condition, customConditions map[string]*Conditio
 //  3. Evaluate(input, ruleenginecore.EvaluateOptions().DescendingPriorityBased(5))
 //     this would evaluate rules in descending priority order (ex: 10,9,8...) and returns top 5 succeeded rule result
 func (re *ruleEngine) Evaluate(ctx context.Context, input Input, op *evaluateOption) ([]*Output, *RuleEngineError) {
-	inputVals, err := input.Validate(re.fields)
+	inputVals, err := input.ValidateAndPrepTypedValues(re.fields)
 	if err != nil {
 		return nil, err
 	}
@@ -233,7 +233,7 @@ func (re *ruleEngine) Evaluate(ctx context.Context, input Input, op *evaluateOpt
 // evaluates only one rule having given rulename
 // returns an error(having error code ErrCodeRuleNotFound) if rule is not found with given rulename.
 func (re *ruleEngine) EvaluateHavingRulename(ctx context.Context, input Input, rulename string) (*Output, *RuleEngineError) {
-	inputVals, err := input.Validate(re.fields)
+	inputVals, err := input.ValidateAndPrepTypedValues(re.fields)
 	if err != nil {
 		return nil, err
 	}

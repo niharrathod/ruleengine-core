@@ -185,6 +185,15 @@ func TestConditionType_validate(t *testing.T) {
 			wantErr: nil,
 		},
 		{
+			name: "ValidContain",
+			conditionType: ConditionType{Operator: ContainOperator,
+				OperandType: StringType,
+				Operands:    []*Operand{{OperandAs: OperandAsField, Val: "story"}, {OperandAs: OperandAsConstant, Val: "dog"}}},
+
+			args:    args{name: "StoryHasDogCondition", fs: Fields{"story": StringType}},
+			wantErr: nil,
+		},
+		{
 			name: "InvalidContainOperandLength",
 			conditionType: ConditionType{Operator: ContainOperator,
 				OperandType: StringType,
@@ -279,13 +288,22 @@ func TestConditionType_validate(t *testing.T) {
 				Operands:    tt.conditionType.Operands,
 			}
 
-			gotErr := c.validate(tt.args.name, tt.args.fs)
+			gotErr := c.validateAndPrepTypedValues(tt.args.name, tt.args.fs)
 			if tt.wantErr == nil && gotErr == nil {
 				return
 			}
 
 			if tt.wantErr != nil && gotErr != nil && gotErr.ErrCode == tt.wantErr.ErrCode {
 				return
+			}
+
+			for _, op := range c.Operands {
+				if op.OperandAs == OperandAsConstant {
+					wantVal, _ := getTypedValue(op.Val, c.OperandType)
+					if !reflect.DeepEqual(op.typedValue, wantVal) {
+						t.Errorf("ConditionType.validate() gotVal = %v, wantVal %v ", op.typedValue, wantVal)
+					}
+				}
 			}
 
 			t.Errorf("ConditionType.validate() gotErr = %v, expected: wantErr %v ", gotErr, tt.wantErr)
@@ -572,7 +590,7 @@ func TestInput_Validate(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, gotErr := tt.input.Validate(tt.args.fs)
+			got, gotErr := tt.input.ValidateAndPrepTypedValues(tt.args.fs)
 
 			if tt.wantErr == nil && gotErr == nil {
 				if !reflect.DeepEqual(got, tt.want) {
