@@ -1,0 +1,579 @@
+{
+    "fields": {
+        "a_bool": "bool",
+        "a_float": "float",
+        "a_int": "int",
+        "a_string": "string",
+        "b_bool": "bool",
+        "b_float": "float",
+        "b_int": "int",
+        "b_string": "string",
+        "c_bool": "bool",
+        "c_float": "float",
+        "c_int": "int",
+        "c_string": "string",
+        "d_bool": "bool",
+        "d_float": "float",
+        "d_int": "int",
+        "d_string": "string",
+        "e_bool": "bool",
+        "e_float": "float",
+        "e_int": "int",
+        "e_string": "string"
+    },
+    "conditionTypes": {
+        "a_bool_==_true": {
+            "operator": "==",
+            "operandType": "bool",
+            "operands": [
+                {
+                    "operandAs": "field",
+                    "val": "a_bool"
+                },
+                {
+                    "operandAs": "constant",
+                    "val": "true"
+                }
+            ]
+        },
+        "a_float_\u003c=_1.0001358E+03": {
+            "operator": "\u003c=",
+            "operandType": "float",
+            "operands": [
+                {
+                    "operandAs": "field",
+                    "val": "a_float"
+                },
+                {
+                    "operandAs": "constant",
+                    "val": "1.0001358E+03"
+                }
+            ]
+        },
+        "a_float_\u003e=_0E+00": {
+            "operator": "\u003e=",
+            "operandType": "float",
+            "operands": [
+                {
+                    "operandAs": "field",
+                    "val": "a_float"
+                },
+                {
+                    "operandAs": "constant",
+                    "val": "0E+00"
+                }
+            ]
+        },
+        "a_int_\u003c=_1000": {
+            "operator": "\u003c=",
+            "operandType": "int",
+            "operands": [
+                {
+                    "operandAs": "field",
+                    "val": "a_int"
+                },
+                {
+                    "operandAs": "constant",
+                    "val": "1000"
+                }
+            ]
+        },
+        "a_int_\u003e=_0": {
+            "operator": "\u003e=",
+            "operandType": "int",
+            "operands": [
+                {
+                    "operandAs": "field",
+                    "val": "a_int"
+                },
+                {
+                    "operandAs": "constant",
+                    "val": "0"
+                }
+            ]
+        },
+        "a_string_==_apple": {
+            "operator": "==",
+            "operandType": "string",
+            "operands": [
+                {
+                    "operandAs": "field",
+                    "val": "a_string"
+                },
+                {
+                    "operandAs": "constant",
+                    "val": "apple"
+                }
+            ]
+        },
+        "b_bool_==_true": {
+            "operator": "==",
+            "operandType": "bool",
+            "operands": [
+                {
+                    "operandAs": "field",
+                    "val": "b_bool"
+                },
+                {
+                    "operandAs": "constant",
+                    "val": "true"
+                }
+            ]
+        },
+        "b_float_\u003c=_1.0001358E+03": {
+            "operator": "\u003c=",
+            "operandType": "float",
+            "operands": [
+                {
+                    "operandAs": "field",
+                    "val": "b_float"
+                },
+                {
+                    "operandAs": "constant",
+                    "val": "1.0001358E+03"
+                }
+            ]
+        },
+        "b_float_\u003e=_0E+00": {
+            "operator": "\u003e=",
+            "operandType": "float",
+            "operands": [
+                {
+                    "operandAs": "field",
+                    "val": "b_float"
+                },
+                {
+                    "operandAs": "constant",
+                    "val": "0E+00"
+                }
+            ]
+        },
+        "b_int_\u003c=_1000": {
+            "operator": "\u003c=",
+            "operandType": "int",
+            "operands": [
+                {
+                    "operandAs": "field",
+                    "val": "b_int"
+                },
+                {
+                    "operandAs": "constant",
+                    "val": "1000"
+                }
+            ]
+        },
+        "b_int_\u003e=_0": {
+            "operator": "\u003e=",
+            "operandType": "int",
+            "operands": [
+                {
+                    "operandAs": "field",
+                    "val": "b_int"
+                },
+                {
+                    "operandAs": "constant",
+                    "val": "0"
+                }
+            ]
+        },
+        "b_string_contain_apple": {
+            "operator": "contain",
+            "operandType": "string",
+            "operands": [
+                {
+                    "operandAs": "constant",
+                    "val": "This should be big story or comma separated values or any kind of string which ends with apple"
+                },
+                {
+                    "operandAs": "field",
+                    "val": "b_string"
+                }
+            ]
+        },
+        "c_bool_==_true": {
+            "operator": "==",
+            "operandType": "bool",
+            "operands": [
+                {
+                    "operandAs": "field",
+                    "val": "c_bool"
+                },
+                {
+                    "operandAs": "constant",
+                    "val": "true"
+                }
+            ]
+        },
+        "c_float_\u003c=_1.0001358E+03": {
+            "operator": "\u003c=",
+            "operandType": "float",
+            "operands": [
+                {
+                    "operandAs": "field",
+                    "val": "c_float"
+                },
+                {
+                    "operandAs": "constant",
+                    "val": "1.0001358E+03"
+                }
+            ]
+        },
+        "c_float_\u003e=_0E+00": {
+            "operator": "\u003e=",
+            "operandType": "float",
+            "operands": [
+                {
+                    "operandAs": "field",
+                    "val": "c_float"
+                },
+                {
+                    "operandAs": "constant",
+                    "val": "0E+00"
+                }
+            ]
+        },
+        "c_int_\u003c=_1000": {
+            "operator": "\u003c=",
+            "operandType": "int",
+            "operands": [
+                {
+                    "operandAs": "field",
+                    "val": "c_int"
+                },
+                {
+                    "operandAs": "constant",
+                    "val": "1000"
+                }
+            ]
+        },
+        "c_int_\u003e=_0": {
+            "operator": "\u003e=",
+            "operandType": "int",
+            "operands": [
+                {
+                    "operandAs": "field",
+                    "val": "c_int"
+                },
+                {
+                    "operandAs": "constant",
+                    "val": "0"
+                }
+            ]
+        },
+        "c_string_contain_apple": {
+            "operator": "contain",
+            "operandType": "string",
+            "operands": [
+                {
+                    "operandAs": "constant",
+                    "val": "This should be big story or comma separated values or any kind of string which ends with apple"
+                },
+                {
+                    "operandAs": "field",
+                    "val": "c_string"
+                }
+            ]
+        },
+        "d_bool_==_true": {
+            "operator": "==",
+            "operandType": "bool",
+            "operands": [
+                {
+                    "operandAs": "field",
+                    "val": "d_bool"
+                },
+                {
+                    "operandAs": "constant",
+                    "val": "true"
+                }
+            ]
+        },
+        "d_float_\u003c=_1.0001358E+03": {
+            "operator": "\u003c=",
+            "operandType": "float",
+            "operands": [
+                {
+                    "operandAs": "field",
+                    "val": "d_float"
+                },
+                {
+                    "operandAs": "constant",
+                    "val": "1.0001358E+03"
+                }
+            ]
+        },
+        "d_float_\u003e=_0E+00": {
+            "operator": "\u003e=",
+            "operandType": "float",
+            "operands": [
+                {
+                    "operandAs": "field",
+                    "val": "d_float"
+                },
+                {
+                    "operandAs": "constant",
+                    "val": "0E+00"
+                }
+            ]
+        },
+        "d_int_\u003c=_1000": {
+            "operator": "\u003c=",
+            "operandType": "int",
+            "operands": [
+                {
+                    "operandAs": "field",
+                    "val": "d_int"
+                },
+                {
+                    "operandAs": "constant",
+                    "val": "1000"
+                }
+            ]
+        },
+        "d_int_\u003e=_0": {
+            "operator": "\u003e=",
+            "operandType": "int",
+            "operands": [
+                {
+                    "operandAs": "field",
+                    "val": "d_int"
+                },
+                {
+                    "operandAs": "constant",
+                    "val": "0"
+                }
+            ]
+        },
+        "d_string_contain_apple": {
+            "operator": "contain",
+            "operandType": "string",
+            "operands": [
+                {
+                    "operandAs": "constant",
+                    "val": "This should be big story or comma separated values or any kind of string which ends with apple"
+                },
+                {
+                    "operandAs": "field",
+                    "val": "d_string"
+                }
+            ]
+        },
+        "e_bool_==_true": {
+            "operator": "==",
+            "operandType": "bool",
+            "operands": [
+                {
+                    "operandAs": "field",
+                    "val": "e_bool"
+                },
+                {
+                    "operandAs": "constant",
+                    "val": "true"
+                }
+            ]
+        },
+        "e_float_\u003c=_1.0001358E+03": {
+            "operator": "\u003c=",
+            "operandType": "float",
+            "operands": [
+                {
+                    "operandAs": "field",
+                    "val": "e_float"
+                },
+                {
+                    "operandAs": "constant",
+                    "val": "1.0001358E+03"
+                }
+            ]
+        },
+        "e_float_\u003e=_0E+00": {
+            "operator": "\u003e=",
+            "operandType": "float",
+            "operands": [
+                {
+                    "operandAs": "field",
+                    "val": "e_float"
+                },
+                {
+                    "operandAs": "constant",
+                    "val": "0E+00"
+                }
+            ]
+        },
+        "e_int_\u003c=_1000": {
+            "operator": "\u003c=",
+            "operandType": "int",
+            "operands": [
+                {
+                    "operandAs": "field",
+                    "val": "e_int"
+                },
+                {
+                    "operandAs": "constant",
+                    "val": "1000"
+                }
+            ]
+        },
+        "e_int_\u003e=_0": {
+            "operator": "\u003e=",
+            "operandType": "int",
+            "operands": [
+                {
+                    "operandAs": "field",
+                    "val": "e_int"
+                },
+                {
+                    "operandAs": "constant",
+                    "val": "0"
+                }
+            ]
+        },
+        "e_string_contain_apple": {
+            "operator": "contain",
+            "operandType": "string",
+            "operands": [
+                {
+                    "operandAs": "constant",
+                    "val": "This should be big story or comma separated values or any kind of string which ends with apple"
+                },
+                {
+                    "operandAs": "field",
+                    "val": "e_string"
+                }
+            ]
+        }
+    },
+    "rules": {
+        "rule_0": {
+            "priority": 0,
+            "condition": {
+                "conditionType": "and",
+                "subConditions": [
+                    {
+                        "conditionType": "d_string_contain_apple",
+                        "subConditions": null
+                    },
+                    {
+                        "conditionType": "a_int_\u003e=_0",
+                        "subConditions": null
+                    },
+                    {
+                        "conditionType": "a_int_\u003c=_1000",
+                        "subConditions": null
+                    },
+                    {
+                        "conditionType": "b_int_\u003e=_0",
+                        "subConditions": null
+                    },
+                    {
+                        "conditionType": "b_int_\u003c=_1000",
+                        "subConditions": null
+                    },
+                    {
+                        "conditionType": "d_int_\u003e=_0",
+                        "subConditions": null
+                    },
+                    {
+                        "conditionType": "d_int_\u003c=_1000",
+                        "subConditions": null
+                    },
+                    {
+                        "conditionType": "e_int_\u003c=_1000",
+                        "subConditions": null
+                    },
+                    {
+                        "conditionType": "e_int_\u003e=_0",
+                        "subConditions": null
+                    },
+                    {
+                        "conditionType": "a_float_\u003e=_0E+00",
+                        "subConditions": null
+                    },
+                    {
+                        "conditionType": "a_float_\u003c=_1.0001358E+03",
+                        "subConditions": null
+                    },
+                    {
+                        "conditionType": "b_float_\u003e=_0E+00",
+                        "subConditions": null
+                    },
+                    {
+                        "conditionType": "b_float_\u003c=_1.0001358E+03",
+                        "subConditions": null
+                    },
+                    {
+                        "conditionType": "c_float_\u003e=_0E+00",
+                        "subConditions": null
+                    },
+                    {
+                        "conditionType": "c_float_\u003c=_1.0001358E+03",
+                        "subConditions": null
+                    },
+                    {
+                        "conditionType": "d_float_\u003c=_1.0001358E+03",
+                        "subConditions": null
+                    },
+                    {
+                        "conditionType": "d_float_\u003e=_0E+00",
+                        "subConditions": null
+                    },
+                    {
+                        "conditionType": "b_string_contain_apple",
+                        "subConditions": null
+                    },
+                    {
+                        "conditionType": "e_string_contain_apple",
+                        "subConditions": null
+                    },
+                    {
+                        "conditionType": "a_bool_==_true",
+                        "subConditions": null
+                    },
+                    {
+                        "conditionType": "c_string_contain_apple",
+                        "subConditions": null
+                    },
+                    {
+                        "conditionType": "b_bool_==_true",
+                        "subConditions": null
+                    },
+                    {
+                        "conditionType": "d_bool_==_true",
+                        "subConditions": null
+                    },
+                    {
+                        "conditionType": "c_int_\u003e=_0",
+                        "subConditions": null
+                    },
+                    {
+                        "conditionType": "c_int_\u003c=_1000",
+                        "subConditions": null
+                    },
+                    {
+                        "conditionType": "e_float_\u003e=_0E+00",
+                        "subConditions": null
+                    },
+                    {
+                        "conditionType": "e_float_\u003c=_1.0001358E+03",
+                        "subConditions": null
+                    },
+                    {
+                        "conditionType": "a_string_==_apple",
+                        "subConditions": null
+                    },
+                    {
+                        "conditionType": "c_bool_==_true",
+                        "subConditions": null
+                    },
+                    {
+                        "conditionType": "e_bool_==_true",
+                        "subConditions": null
+                    }
+                ]
+            },
+            "result": {
+                "rule_0": "yes"
+            }
+        }
+    }
+}
