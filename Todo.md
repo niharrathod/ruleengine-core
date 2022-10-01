@@ -2,7 +2,7 @@
 
 - [X] setup GitHub ci pipeline
 - [X] Documentation
-- [ ] Examples & user-guide
+- [X] Examples & user-guide
 
 ## Enhancement
 

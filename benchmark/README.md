@@ -7,8 +7,8 @@
 ## Command
 
 ```bash
-    $ cd ./benchmark/
-    $ go test -bench=. -benchtime=5s -benchmem
+    cd ./benchmark/
+    go test -bench=. -benchtime=5s -benchmem
 ```
 
 ## Result History

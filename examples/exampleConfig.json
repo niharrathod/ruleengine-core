@@ -1,0 +1,104 @@
+{
+    "fields": {
+        "flightDestination": "string",
+        "isFlightBooking": "bool",
+        "totalAmount": "int"
+    },
+    "conditionTypes": {
+        "flightDestinationCondition": {
+            "operator": "contain",
+            "operandType": "string",
+            "operands": [
+                {
+                    "operandAs": "constant",
+                    "val": "Bangalore,Delhi,Mumbai,Chennai"
+                },
+                {
+                    "operandAs": "field",
+                    "val": "flightDestination"
+                }
+            ]
+        },
+        "isFlightBookingCondition": {
+            "operator": "==",
+            "operandType": "bool",
+            "operands": [
+                {
+                    "operandAs": "field",
+                    "val": "isFlightBooking"
+                },
+                {
+                    "operandAs": "constant",
+                    "val": "true"
+                }
+            ]
+        },
+        "totalAmountGreater20000": {
+            "operator": ">",
+            "operandType": "int",
+            "operands": [
+                {
+                    "operandAs": "field",
+                    "val": "totalAmount"
+                },
+                {
+                    "operandAs": "constant",
+                    "val": "20000"
+                }
+            ]
+        }
+    },
+    "rules": {
+        "RuleDiscount10Per": {
+            "priority": 1,
+            "condition": {
+                "conditionType": "and",
+                "subConditions": [
+                    {
+                        "conditionType": "not",
+                        "subConditions": [
+                            {
+                                "conditionType": "totalAmountGreater20000",
+                                "subConditions": null
+                            }
+                        ]
+                    },
+                    {
+                        "conditionType": "isFlightBookingCondition",
+                        "subConditions": null
+                    },
+                    {
+                        "conditionType": "flightDestinationCondition",
+                        "subConditions": null
+                    }
+                ]
+            },
+            "result": {
+                "discount": 10
+            }
+        },
+        "RuleDiscount20Per": {
+            "priority": 1,
+            "condition": {
+                "conditionType": "and",
+                "subConditions": [
+                    {
+                        "conditionType": "totalAmountGreater20000",
+                        "subConditions": null
+                    },
+                    {
+                        "conditionType": "isFlightBookingCondition",
+                        "subConditions": null
+                    },
+                    {
+                        "conditionType": "flightDestinationCondition",
+                        "subConditions": null
+                    }
+                ]
+            },
+            "result": {
+                "discount": 20
+            }
+        }
+    }
+}
