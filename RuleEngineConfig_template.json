@@ -9,7 +9,7 @@
             "operandType": "string | int | float | bool",
             "operands": [
                 {
-                    "operandAs": "field",
+                    "operandAs": "field | constant",
                     "val": "fieldname"
                 },
                 {

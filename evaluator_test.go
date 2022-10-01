@@ -24,7 +24,7 @@ func Test_logicalEvaluator_evaluate(t *testing.T) {
 
 	type fields struct {
 		operator        string
-		innerEvaluators []Evaluator
+		innerEvaluators []evaluator
 	}
 	type args struct {
 		input typedValueMap
@@ -40,7 +40,7 @@ func Test_logicalEvaluator_evaluate(t *testing.T) {
 			name: "validLogicalNegateEvaluatorTrue",
 			fields: fields{
 				operator: NegationOperator,
-				innerEvaluators: []Evaluator{
+				innerEvaluators: []evaluator{
 					trueEvaluator,
 				},
 			},
@@ -54,7 +54,7 @@ func Test_logicalEvaluator_evaluate(t *testing.T) {
 			name: "validLogicalNegateEvaluatorFalse",
 			fields: fields{
 				operator: NegationOperator,
-				innerEvaluators: []Evaluator{
+				innerEvaluators: []evaluator{
 					falseEvaluator,
 				},
 			},
@@ -68,7 +68,7 @@ func Test_logicalEvaluator_evaluate(t *testing.T) {
 			name: "validLogicalAndEvaluatorBothTrue",
 			fields: fields{
 				operator: AndOperator,
-				innerEvaluators: []Evaluator{
+				innerEvaluators: []evaluator{
 					trueEvaluator,
 					trueEvaluator,
 				},
@@ -83,7 +83,7 @@ func Test_logicalEvaluator_evaluate(t *testing.T) {
 			name: "validLogicalAndEvaluatorFalseTrue",
 			fields: fields{
 				operator: AndOperator,
-				innerEvaluators: []Evaluator{
+				innerEvaluators: []evaluator{
 					trueEvaluator,
 					falseEvaluator,
 				},
@@ -98,7 +98,7 @@ func Test_logicalEvaluator_evaluate(t *testing.T) {
 			name: "validLogicalOrEvaluatorBothFalse",
 			fields: fields{
 				operator: OrOperator,
-				innerEvaluators: []Evaluator{
+				innerEvaluators: []evaluator{
 					falseEvaluator,
 					falseEvaluator,
 				},
@@ -113,7 +113,7 @@ func Test_logicalEvaluator_evaluate(t *testing.T) {
 			name: "validLogicalOrEvaluatorFalseTrue",
 			fields: fields{
 				operator: OrOperator,
-				innerEvaluators: []Evaluator{
+				innerEvaluators: []evaluator{
 					falseEvaluator,
 					trueEvaluator,
 				},
@@ -128,7 +128,7 @@ func Test_logicalEvaluator_evaluate(t *testing.T) {
 			name: "InvalidLogicalEvaluatorPanic",
 			fields: fields{
 				operator: "panic",
-				innerEvaluators: []Evaluator{
+				innerEvaluators: []evaluator{
 					falseEvaluator,
 					trueEvaluator,
 				},
@@ -152,7 +152,7 @@ func Test_logicalEvaluator_evaluate(t *testing.T) {
 					return
 				}
 
-				t.Errorf("logicalEvaluator.evaluate() = %v, want %v isPanic %v", "Panic", tt.want, tt.wantPanic)
+				t.Errorf("logicalEvaluator.evaluate() gotPanic:%v , want:%v wantPanic:%v", r != nil, tt.want, tt.wantPanic)
 			}()
 
 			le := &logicalEvaluator{
@@ -160,7 +160,7 @@ func Test_logicalEvaluator_evaluate(t *testing.T) {
 				innerEvaluators: tt.fields.innerEvaluators,
 			}
 			if got := le.evaluate(tt.args.input); got != tt.want {
-				t.Errorf("logicalEvaluator.evaluate() = %v, want %v isPanic %v", got, tt.want, tt.wantPanic)
+				t.Errorf("logicalEvaluator.evaluate() got:%v, want:%v wantPanic:%v", got, tt.want, tt.wantPanic)
 			}
 		})
 	}
@@ -362,7 +362,7 @@ func Test_greaterEvaluator_evaluate(t *testing.T) {
 					return
 				}
 
-				t.Errorf("greaterEvaluator.evaluate() = %v, want %v isPanic %v", "Panic", tt.want, tt.wantPanic)
+				t.Errorf("greaterEvaluator.evaluate() gotPanic:%v , want:%v wantPanic:%v", r != nil, tt.want, tt.wantPanic)
 			}()
 
 			ge := &greaterEvaluator{
@@ -370,7 +370,7 @@ func Test_greaterEvaluator_evaluate(t *testing.T) {
 				operands:    tt.condition.operands,
 			}
 			if got := ge.evaluate(tt.args.input); got != tt.want {
-				t.Errorf("greaterEvaluator.evaluate() = %v, want %v isPanic %v", "Panic", tt.want, tt.wantPanic)
+				t.Errorf("greaterEvaluator.evaluate() got:%v, want:%v wantPanic:%v", got, tt.want, tt.wantPanic)
 			}
 		})
 	}
@@ -571,7 +571,7 @@ func Test_greaterEqualEvaluator_evaluate(t *testing.T) {
 					return
 				}
 
-				t.Errorf("greaterEqualEvaluator.evaluate() = %v, want %v isPanic %v", "Panic", tt.want, tt.wantPanic)
+				t.Errorf("greaterEqualEvaluator.evaluate() gotPanic:%v , want:%v wantPanic:%v", r != nil, tt.want, tt.wantPanic)
 			}()
 
 			gte := &greaterEqualEvaluator{
@@ -579,7 +579,7 @@ func Test_greaterEqualEvaluator_evaluate(t *testing.T) {
 				operands:    tt.condition.operands,
 			}
 			if got := gte.evaluate(tt.args.input); got != tt.want {
-				t.Errorf("greaterEqualEvaluator.evaluate() = %v, want %v isPanic %v", "Panic", tt.want, tt.wantPanic)
+				t.Errorf("greaterEqualEvaluator.evaluate() got:%v, want:%v wantPanic:%v", got, tt.want, tt.wantPanic)
 			}
 		})
 	}
@@ -781,7 +781,7 @@ func Test_lessEvaluator_evaluate(t *testing.T) {
 					return
 				}
 
-				t.Errorf("lessEvaluator.evaluate() = %v, want %v isPanic %v", "Panic", tt.want, tt.wantPanic)
+				t.Errorf("lessEvaluator.evaluate() gotPanic:%v , want:%v wantPanic:%v", r != nil, tt.want, tt.wantPanic)
 			}()
 
 			lt := &lessEvaluator{
@@ -789,7 +789,7 @@ func Test_lessEvaluator_evaluate(t *testing.T) {
 				operands:    tt.condition.operands,
 			}
 			if got := lt.evaluate(tt.args.input); got != tt.want {
-				t.Errorf("lessEvaluator.evaluate() = %v, want %v isPanic %v", "Panic", tt.want, tt.wantPanic)
+				t.Errorf("lessEvaluator.evaluate() got:%v, want:%v wantPanic:%v", got, tt.want, tt.wantPanic)
 			}
 		})
 	}
@@ -990,7 +990,7 @@ func Test_lessEqualEvaluator_evaluate(t *testing.T) {
 					return
 				}
 
-				t.Errorf("lessEqualEvaluator.evaluate() = %v, want %v isPanic %v", "Panic", tt.want, tt.wantPanic)
+				t.Errorf("lessEqualEvaluator.evaluate() gotPanic:%v , want:%v wantPanic:%v", r != nil, tt.want, tt.wantPanic)
 			}()
 
 			lte := &lessEqualEvaluator{
@@ -998,7 +998,7 @@ func Test_lessEqualEvaluator_evaluate(t *testing.T) {
 				operands:    tt.condition.operands,
 			}
 			if got := lte.evaluate(tt.args.input); got != tt.want {
-				t.Errorf("lessEqualEvaluator.evaluate() = %v, want %v isPanic %v", "Panic", tt.want, tt.wantPanic)
+				t.Errorf("lessEqualEvaluator.evaluate() got:%v, want:%v wantPanic:%v", got, tt.want, tt.wantPanic)
 			}
 		})
 	}
@@ -1333,14 +1333,14 @@ func Test_equalEvaluator_evaluate(t *testing.T) {
 					return
 				}
 
-				t.Errorf("equalEvaluator.evaluate() = %v, want %v isPanic %v", "Panic", tt.want, tt.wantPanic)
+				t.Errorf("equalEvaluator.evaluate() gotPanic:%v , want:%v wantPanic:%v", r != nil, tt.want, tt.wantPanic)
 			}()
 			eq := &equalEvaluator{
 				operandType: tt.condition.operandType,
 				operands:    tt.condition.operands,
 			}
 			if got := eq.evaluate(tt.args.input); got != tt.want {
-				t.Errorf("equalEvaluator.evaluate() = %v, want %v isPanic %v", "Panic", tt.want, tt.wantPanic)
+				t.Errorf("equalEvaluator.evaluate() got:%v, want:%v wantPanic:%v", got, tt.want, tt.wantPanic)
 			}
 		})
 	}
@@ -1675,14 +1675,14 @@ func Test_notEqualEvaluator_evaluate(t *testing.T) {
 					return
 				}
 
-				t.Errorf("notEqualEvaluator.evaluate() = %v, want %v isPanic %v", "Panic", tt.want, tt.wantPanic)
+				t.Errorf("notEqualEvaluator.evaluate() gotPanic:%v , want:%v wantPanic:%v", r != nil, tt.want, tt.wantPanic)
 			}()
 			neq := &notEqualEvaluator{
 				operandType: tt.condition.operandType,
 				operands:    tt.condition.operands,
 			}
 			if got := neq.evaluate(tt.args.input); got != tt.want {
-				t.Errorf("notEqualEvaluator.evaluate() = %v, want %v isPanic %v", "Panic", tt.want, tt.wantPanic)
+				t.Errorf("notEqualEvaluator.evaluate() got:%v, want:%v wantPanic:%v", got, tt.want, tt.wantPanic)
 			}
 		})
 	}
@@ -1801,14 +1801,14 @@ func Test_containEvaluator_evaluate(t *testing.T) {
 					return
 				}
 
-				t.Errorf("containEvaluator.evaluate() = %v, want %v isPanic %v", "Panic", tt.want, tt.wantPanic)
+				t.Errorf("containEvaluator.evaluate() gotPanic:%v , want:%v wantPanic:%v", r != nil, tt.want, tt.wantPanic)
 			}()
 			ce := &containEvaluator{
 				operandType: tt.condition.operandType,
 				operands:    tt.condition.operands,
 			}
 			if got := ce.evaluate(tt.args.input); got != tt.want {
-				t.Errorf("containEvaluator.evaluate() = %v, want %v isPanic %v", "Panic", tt.want, tt.wantPanic)
+				t.Errorf("containEvaluator.evaluate() got:%v, want:%v wantPanic:%v", got, tt.want, tt.wantPanic)
 			}
 		})
 	}

@@ -1,6 +1,6 @@
 package ruleenginecore
 
-type Evaluator interface {
+type evaluator interface {
 	evaluate(input typedValueMap) bool
 }
 
@@ -11,7 +11,7 @@ type customEvaluator struct {
 
 type logicalEvaluator struct {
 	operator        string
-	innerEvaluators []Evaluator
+	innerEvaluators []evaluator
 }
 
 func (le *logicalEvaluator) evaluate(input typedValueMap) bool {
