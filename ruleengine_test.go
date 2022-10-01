@@ -11,7 +11,7 @@ var discount10TestRule = &rule{
 	priority: 1,
 	rootEvaluator: &logicalEvaluator{
 		operator: AndOperator,
-		innerEvaluators: []Evaluator{
+		innerEvaluators: []evaluator{
 			&greaterEvaluator{
 				operandType: IntType,
 				operands: []*Operand{
@@ -66,7 +66,7 @@ var discount5TestRule = &rule{
 	priority: 2,
 	rootEvaluator: &logicalEvaluator{
 		operator: AndOperator,
-		innerEvaluators: []Evaluator{
+		innerEvaluators: []evaluator{
 			&greaterEvaluator{
 				operandType: IntType,
 				operands: []*Operand{
@@ -97,7 +97,7 @@ var discount5TestRule = &rule{
 			},
 			&logicalEvaluator{
 				operator: NegationOperator,
-				innerEvaluators: []Evaluator{
+				innerEvaluators: []evaluator{
 					&greaterEvaluator{
 						operandType: IntType,
 						operands: []*Operand{
@@ -126,7 +126,7 @@ var discount2TestRule = &rule{
 	priority: 3,
 	rootEvaluator: &logicalEvaluator{
 		operator: AndOperator,
-		innerEvaluators: []Evaluator{
+		innerEvaluators: []evaluator{
 			&greaterEvaluator{
 				operandType: IntType,
 				operands: []*Operand{
@@ -333,7 +333,7 @@ func TestCreateRuleEngine(t *testing.T) {
 				return
 			}
 
-			t.Errorf("ruleenginecore.New() got %v gotErr %v, want %v wantErr %v", got, gotErr, tt.want, tt.wantErr)
+			t.Errorf("ruleenginecore.New() got:%v gotErr:%v, want:%v wantErr:%v", got, gotErr, tt.want, tt.wantErr)
 		})
 	}
 }
@@ -550,7 +550,7 @@ func Test_ruleEngine_Evaluate(t *testing.T) {
 				return
 			}
 
-			t.Errorf("ruleEngine.Evaluate() got %v gotErr %v, want %v wantErr %v", got, gotErr, tt.want, tt.wantErr)
+			t.Errorf("ruleEngine.Evaluate() got:%v gotErr:%v, want:%v wantErr:%v", got, gotErr, tt.want, tt.wantErr)
 		})
 	}
 }
@@ -566,12 +566,12 @@ func Test_ruleEngine_Evaluate_ContextAware(t *testing.T) {
 		op    *evaluateOption
 	}
 	tests := []struct {
-		name         string
-		fields       fields
-		args         args
-		ctxCancelled bool
-		want         []*Output
-		wantErr      *RuleEngineError
+		name                  string
+		fields                fields
+		args                  args
+		immediateCtxCancelled bool
+		want                  []*Output
+		wantErr               *RuleEngineError
 	}{
 		{
 			name: "EvaluateComplete_Normal",
@@ -600,8 +600,8 @@ func Test_ruleEngine_Evaluate_ContextAware(t *testing.T) {
 				},
 				op: EvaluateOptions().Complete(),
 			},
-			ctxCancelled: false,
-			wantErr:      nil,
+			immediateCtxCancelled: false,
+			wantErr:               nil,
 			want: []*Output{
 				{
 					Rulename: "Discount10",
@@ -642,7 +642,7 @@ func Test_ruleEngine_Evaluate_ContextAware(t *testing.T) {
 				},
 				op: EvaluateOptions().Complete(),
 			},
-			ctxCancelled: true,
+			immediateCtxCancelled: true,
 			wantErr: &RuleEngineError{
 				ErrCode: ErrCodeContextCancelled,
 			},
@@ -675,8 +675,8 @@ func Test_ruleEngine_Evaluate_ContextAware(t *testing.T) {
 				},
 				op: EvaluateOptions().AscendingPriorityBased(1),
 			},
-			ctxCancelled: false,
-			wantErr:      nil,
+			immediateCtxCancelled: false,
+			wantErr:               nil,
 			want: []*Output{
 				{
 					Rulename: "Discount10",
@@ -712,7 +712,7 @@ func Test_ruleEngine_Evaluate_ContextAware(t *testing.T) {
 				},
 				op: EvaluateOptions().AscendingPriorityBased(1),
 			},
-			ctxCancelled: true,
+			immediateCtxCancelled: true,
 			wantErr: &RuleEngineError{
 				ErrCode: ErrCodeContextCancelled,
 			},
@@ -745,8 +745,8 @@ func Test_ruleEngine_Evaluate_ContextAware(t *testing.T) {
 				},
 				op: EvaluateOptions().DescendingPriorityBased(1),
 			},
-			ctxCancelled: false,
-			wantErr:      nil,
+			immediateCtxCancelled: false,
+			wantErr:               nil,
 			want: []*Output{
 				{
 					Rulename: "Discount2",
@@ -782,7 +782,7 @@ func Test_ruleEngine_Evaluate_ContextAware(t *testing.T) {
 				},
 				op: EvaluateOptions().DescendingPriorityBased(1),
 			},
-			ctxCancelled: true,
+			immediateCtxCancelled: true,
 			wantErr: &RuleEngineError{
 				ErrCode: ErrCodeContextCancelled,
 			},
@@ -797,7 +797,7 @@ func Test_ruleEngine_Evaluate_ContextAware(t *testing.T) {
 				rules:   tt.fields.rules,
 			}
 			ctx, cancel := context.WithCancel(context.Background())
-			if tt.ctxCancelled {
+			if tt.immediateCtxCancelled {
 				cancel()
 			} else {
 				defer cancel()
@@ -811,7 +811,7 @@ func Test_ruleEngine_Evaluate_ContextAware(t *testing.T) {
 				return
 			}
 
-			t.Errorf("ruleEngine.Evaluate() got %v gotErr %v, want %v wantErr %v", got, gotErr, tt.want, tt.wantErr)
+			t.Errorf("ruleEngine.Evaluate() got:%v gotErr:%v, want:%v wantErr:%v", got, gotErr, tt.want, tt.wantErr)
 		})
 	}
 }
@@ -866,6 +866,36 @@ func Test_ruleEngine_RulenameBasedEvaluate(t *testing.T) {
 				Priority: 1,
 				Result:   discount10TestRule.result,
 			},
+		},
+		{
+			name: "noMatch",
+			fields: fields{
+				fields: map[string]string{
+					"totalAmount":    IntType,
+					"IsHotelBooking": BoolType,
+					"PaxCount":       IntType,
+				},
+				ruleMap: map[string]*rule{
+					"Discount10": discount10TestRule,
+					"Discount5":  discount5TestRule,
+					"Discount2":  discount2TestRule,
+				},
+				rules: []*rule{
+					discount10TestRule,
+					discount5TestRule,
+					discount2TestRule,
+				},
+			},
+			args: args{
+				input: Input{
+					"totalAmount":    "25000",
+					"IsHotelBooking": "false",
+					"PaxCount":       "10",
+				},
+				rulename: "Discount10",
+			},
+			wantErr: nil,
+			want:    nil,
 		},
 		{
 			name: "InvalidInput",
@@ -948,7 +978,7 @@ func Test_ruleEngine_RulenameBasedEvaluate(t *testing.T) {
 			if tt.wantErr != nil && gotErr != nil && gotErr.ErrCode == tt.wantErr.ErrCode {
 				return
 			}
-			t.Errorf("ruleEngine.RulenameBasedEvaluate() got %v  gotErr %v, want %v wantErr %v", got, gotErr, tt.want, tt.wantErr)
+			t.Errorf("ruleEngine.RulenameBasedEvaluate() got:%v gotErr:%v, want:%v wantErr:%v", got, gotErr, tt.want, tt.wantErr)
 		})
 	}
 }
@@ -964,12 +994,12 @@ func Test_ruleEngine_RulenameBasedEvaluate_ContextAware(t *testing.T) {
 		rulename string
 	}
 	tests := []struct {
-		name         string
-		fields       fields
-		args         args
-		ctxCancelled bool
-		want         *Output
-		wantErr      *RuleEngineError
+		name                  string
+		fields                fields
+		args                  args
+		immediateCtxCancelled bool
+		want                  *Output
+		wantErr               *RuleEngineError
 	}{
 		{
 			name: "valid",
@@ -998,8 +1028,8 @@ func Test_ruleEngine_RulenameBasedEvaluate_ContextAware(t *testing.T) {
 				},
 				rulename: "Discount10",
 			},
-			ctxCancelled: false,
-			wantErr:      nil,
+			immediateCtxCancelled: false,
+			wantErr:               nil,
 			want: &Output{
 				Rulename: "Discount10",
 				Priority: 1,
@@ -1033,7 +1063,7 @@ func Test_ruleEngine_RulenameBasedEvaluate_ContextAware(t *testing.T) {
 				},
 				rulename: "Discount10",
 			},
-			ctxCancelled: true,
+			immediateCtxCancelled: true,
 			wantErr: &RuleEngineError{
 				ErrCode: ErrCodeContextCancelled,
 			},
@@ -1048,7 +1078,7 @@ func Test_ruleEngine_RulenameBasedEvaluate_ContextAware(t *testing.T) {
 				rules:   tt.fields.rules,
 			}
 			ctx, cancel := context.WithCancel(context.Background())
-			if tt.ctxCancelled {
+			if tt.immediateCtxCancelled {
 				cancel()
 			} else {
 				defer cancel()
@@ -1063,7 +1093,7 @@ func Test_ruleEngine_RulenameBasedEvaluate_ContextAware(t *testing.T) {
 				return
 			}
 
-			t.Errorf("ruleEngine.RulenameBasedEvaluate() got %v gotErr %v, want %v wantErr %v", got, gotErr, tt.want, tt.wantErr)
+			t.Errorf("ruleEngine.RulenameBasedEvaluate() got:%v gotErr:%v, want:%v wantErr:%v", got, gotErr, tt.want, tt.wantErr)
 		})
 	}
 }
@@ -1114,7 +1144,7 @@ func Test_rule_evaluate(t *testing.T) {
 				result:        tt.r.result,
 			}
 			if got, _ := r.evaluate(context.TODO(), tt.args.input); got != tt.want {
-				t.Errorf("rule.evaluate() = %v, want %v", got, tt.want)
+				t.Errorf("rule.evaluate() got:%v, want:%v", got, tt.want)
 			}
 		})
 	}
@@ -1125,12 +1155,12 @@ func Test_rule_evaluateContextAware(t *testing.T) {
 		input typedValueMap
 	}
 	tests := []struct {
-		name         string
-		r            rule
-		args         args
-		ctxCancelled bool
-		want         bool
-		wantErr      *RuleEngineError
+		name                  string
+		r                     rule
+		args                  args
+		immediateCtxCancelled bool
+		want                  bool
+		wantErr               *RuleEngineError
 	}{
 		{
 			name: "contextCancelled",
@@ -1143,7 +1173,7 @@ func Test_rule_evaluateContextAware(t *testing.T) {
 			args: args{
 				input: typedValueMap{},
 			},
-			ctxCancelled: true,
+			immediateCtxCancelled: true,
 			wantErr: &RuleEngineError{
 				ErrCode: ErrCodeContextCancelled,
 			},
@@ -1159,9 +1189,9 @@ func Test_rule_evaluateContextAware(t *testing.T) {
 			args: args{
 				input: typedValueMap{},
 			},
-			ctxCancelled: false,
-			want:         true,
-			wantErr:      nil,
+			immediateCtxCancelled: false,
+			want:                  true,
+			wantErr:               nil,
 		},
 	}
 	for _, tt := range tests {
@@ -1174,7 +1204,7 @@ func Test_rule_evaluateContextAware(t *testing.T) {
 			}
 
 			ctx, cancel := context.WithCancel(context.Background())
-			if tt.ctxCancelled {
+			if tt.immediateCtxCancelled {
 				cancel()
 			} else {
 				defer cancel()
@@ -1190,7 +1220,163 @@ func Test_rule_evaluateContextAware(t *testing.T) {
 				return
 			}
 
-			t.Errorf("rule.evaluate() got %v  gotErr %v, want %v wantErr %v", got, gotErr, tt.want, tt.wantErr)
+			t.Errorf("rule.evaluate() got:%v gotErr:%v, want:%v wantErr:%v", got, gotErr, tt.want, tt.wantErr)
+		})
+	}
+}
+
+func Test_prepareEvaluatorTree(t *testing.T) {
+	type args struct {
+		cond             *Condition
+		customConditions map[string]*ConditionType
+	}
+	tests := []struct {
+		name      string
+		args      args
+		want      evaluator
+		wantPanic bool
+	}{
+		{
+			name: "validGreaterEqual",
+			args: args{
+				customConditions: map[string]*ConditionType{
+					"GTE": {
+						Operator:    GreaterEqualOperator,
+						OperandType: IntType,
+					},
+				},
+				cond: &Condition{
+					ConditionType: "GTE",
+				},
+			},
+			want: &greaterEqualEvaluator{
+				operandType: IntType,
+			},
+			wantPanic: false,
+		},
+		{
+			name: "validLess",
+			args: args{
+				customConditions: map[string]*ConditionType{
+					"LT": {
+						Operator:    LessOperator,
+						OperandType: IntType,
+					},
+				},
+				cond: &Condition{
+					ConditionType: "LT",
+				},
+			},
+			want: &lessEvaluator{
+				operandType: IntType,
+			},
+			wantPanic: false,
+		},
+		{
+			name: "validLessEqual",
+			args: args{
+				customConditions: map[string]*ConditionType{
+					"LTE": {
+						Operator:    LessEqualOperator,
+						OperandType: IntType,
+					},
+				},
+				cond: &Condition{
+					ConditionType: "LTE",
+				},
+			},
+			want: &lessEqualEvaluator{
+				operandType: IntType,
+			},
+			wantPanic: false,
+		},
+		{
+			name: "validNotEqual",
+			args: args{
+				customConditions: map[string]*ConditionType{
+					"NEQ": {
+						Operator:    NotEqualOperator,
+						OperandType: IntType,
+					},
+				},
+				cond: &Condition{
+					ConditionType: "NEQ",
+				},
+			},
+			want: &notEqualEvaluator{
+				operandType: IntType,
+			},
+			wantPanic: false,
+		},
+		{
+			name: "validContain",
+			args: args{
+				customConditions: map[string]*ConditionType{
+					"CONT": {
+						Operator:    ContainOperator,
+						OperandType: StringType,
+					},
+				},
+				cond: &Condition{
+					ConditionType: "CONT",
+				},
+			},
+			want: &containEvaluator{
+				operandType: StringType,
+			},
+			wantPanic: false,
+		},
+		{
+			name: "InvalidConditionType",
+			args: args{
+				customConditions: map[string]*ConditionType{
+					"CONT": {
+						Operator:    ContainOperator,
+						OperandType: StringType,
+					},
+				},
+				cond: &Condition{
+					ConditionType: "Invalid",
+				},
+			},
+			want:      nil,
+			wantPanic: true,
+		},
+		{
+			name: "InvalidCustomConditionOperator",
+			args: args{
+				customConditions: map[string]*ConditionType{
+					"Test": {
+						Operator:    "Invalid",
+						OperandType: StringType,
+					},
+				},
+				cond: &Condition{
+					ConditionType: "Test",
+				},
+			},
+			want:      nil,
+			wantPanic: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			defer func() {
+				r := recover()
+				if !tt.wantPanic && r == nil {
+					return
+				}
+				if tt.wantPanic && r != nil {
+					return
+				}
+
+				t.Errorf("prepareEvaluatorTree() gotPanic:%v , want:%T wantPanic:%v", r != nil, tt.want, tt.wantPanic)
+			}()
+
+			got := prepareEvaluatorTree(tt.args.cond, tt.args.customConditions)
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("prepareEvaluatorTree() got:%T, want:%T wantPanic:%v", got, tt.want, tt.wantPanic)
+			}
 		})
 	}
 }

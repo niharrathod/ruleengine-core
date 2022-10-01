@@ -1,13 +1,20 @@
 package ruleenginecore
 
+type evaluationType uint
+
+const (
+	Complete evaluationType = iota + 1
+	AscendingPriorityBased
+	DescendingPriorityBased
+)
+
 type evaluateOption struct {
-	considerPriority bool
-	ascPriority      bool
-	findFirst        uint
+	evalType evaluationType
+	limit    uint
 }
 
 var complete = evaluateOption{
-	considerPriority: false,
+	evalType: Complete,
 }
 
 type evaluateOptionSelector bool
@@ -19,21 +26,19 @@ func (e *evaluateOptionSelector) Complete() *evaluateOption {
 	return &complete
 }
 
-// ascending priority based first n matched rule outcome
+// ascending priority based first n matched rules as outcome
 func (e *evaluateOptionSelector) AscendingPriorityBased(n uint) *evaluateOption {
 	return &evaluateOption{
-		considerPriority: true,
-		ascPriority:      true,
-		findFirst:        n,
+		evalType: AscendingPriorityBased,
+		limit:    n,
 	}
 }
 
-// descending priority based first n matched rule outcome
+// descending priority based first n matched rules as outcome
 func (e *evaluateOptionSelector) DescendingPriorityBased(n uint) *evaluateOption {
 	return &evaluateOption{
-		considerPriority: true,
-		ascPriority:      false,
-		findFirst:        n,
+		evalType: DescendingPriorityBased,
+		limit:    n,
 	}
 }
 

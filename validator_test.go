@@ -60,7 +60,7 @@ func TestFields_IsValid(t *testing.T) {
 				return
 			}
 
-			t.Errorf("Fields.IsValid() gotErr = %v, expected: wantErr %v ", gotErr, tt.wantErr)
+			t.Errorf("Fields.IsValid() gotErr:%v, wantErr:%v ", gotErr, tt.wantErr)
 		})
 	}
 }
@@ -95,12 +95,12 @@ func TestFields_validate(t *testing.T) {
 				return
 			}
 
-			t.Errorf("fs.validate() gotErr = %v, expected: wantErr %v ", gotErr, tt.wantErr)
+			t.Errorf("fs.validate() gotErr:%v, wantErr:%v ", gotErr, tt.wantErr)
 		})
 	}
 }
 
-func TestConditionType_validate(t *testing.T) {
+func TestConditionType_validateAndParseValues(t *testing.T) {
 	type args struct {
 		name string
 		fs   Fields
@@ -185,6 +185,17 @@ func TestConditionType_validate(t *testing.T) {
 			wantErr: nil,
 		},
 		{
+			name: "InvalidContainOperandAs",
+			conditionType: ConditionType{Operator: ContainOperator,
+				OperandType: StringType,
+				Operands:    []*Operand{{OperandAs: "Invalid", Val: "story"}, {OperandAs: OperandAsConstant, Val: "dog"}}},
+
+			args: args{name: "StoryHasDogCondition", fs: Fields{"story": StringType}},
+			wantErr: &RuleEngineError{
+				ErrCode: ErrCodeInvalidOperandAs,
+			},
+		},
+		{
 			name: "ValidContain",
 			conditionType: ConditionType{Operator: ContainOperator,
 				OperandType: StringType,
@@ -207,12 +218,23 @@ func TestConditionType_validate(t *testing.T) {
 		{
 			name: "InvalidContainOperandType",
 			conditionType: ConditionType{Operator: ContainOperator,
-				OperandType: IntType,
+				OperandType: "Invalid",
 				Operands:    []*Operand{{OperandAs: OperandAsField, Val: "story"}, {OperandAs: OperandAsField, Val: "story"}}},
 
 			args: args{name: "StoryHasDogCondition", fs: Fields{"story": StringType}},
 			wantErr: &RuleEngineError{
 				ErrCode: ErrCodeInvalidOperandType,
+			},
+		},
+		{
+			name: "InvalidContainOperandType",
+			conditionType: ConditionType{Operator: ContainOperator,
+				OperandType: StringType,
+				Operands:    []*Operand{{OperandAs: OperandAsField, Val: "story"}, {OperandAs: OperandAsConstant, Val: "dog"}}},
+
+			args: args{name: "StoryHasDogCondition", fs: Fields{"story": IntType}},
+			wantErr: &RuleEngineError{
+				ErrCode: ErrCodeInvalidValueType,
 			},
 		},
 		{
@@ -288,7 +310,7 @@ func TestConditionType_validate(t *testing.T) {
 				Operands:    tt.conditionType.Operands,
 			}
 
-			gotErr := c.validateAndPrepTypedValues(tt.args.name, tt.args.fs)
+			gotErr := c.validateAndParseValues(tt.args.name, tt.args.fs)
 			if tt.wantErr == nil && gotErr == nil {
 				return
 			}
@@ -301,12 +323,12 @@ func TestConditionType_validate(t *testing.T) {
 				if op.OperandAs == OperandAsConstant {
 					wantVal, _ := getTypedValue(op.Val, c.OperandType)
 					if !reflect.DeepEqual(op.typedValue, wantVal) {
-						t.Errorf("ConditionType.validate() gotVal = %v, wantVal %v ", op.typedValue, wantVal)
+						t.Errorf("ConditionType.validate() gotVal:%v, wantVal:%v ", op.typedValue, wantVal)
 					}
 				}
 			}
 
-			t.Errorf("ConditionType.validate() gotErr = %v, expected: wantErr %v ", gotErr, tt.wantErr)
+			t.Errorf("ConditionType.validate() gotErr:%v, wantErr:%v ", gotErr, tt.wantErr)
 		})
 	}
 }
@@ -437,12 +459,12 @@ func TestRule_validate(t *testing.T) {
 				return
 			}
 
-			t.Errorf("Rule.validate() gotErr = %v, expected: wantErr %v ", gotErr, tt.wantErr)
+			t.Errorf("Rule.validate() gotErr:%v, wantErr:%v ", gotErr, tt.wantErr)
 		})
 	}
 }
 
-func TestRuleEngineConfig_Validate(t *testing.T) {
+func TestRuleEngineConfig_validate(t *testing.T) {
 
 	tests := []struct {
 		name             string
@@ -517,7 +539,7 @@ func TestRuleEngineConfig_Validate(t *testing.T) {
 				Rules:          tt.ruleEngineConfig.Rules,
 			}
 
-			gotErr := c.Validate()
+			gotErr := c.validate()
 
 			if (tt.wantErr == nil) && (gotErr == nil) {
 				return
@@ -527,12 +549,12 @@ func TestRuleEngineConfig_Validate(t *testing.T) {
 				return
 			}
 
-			t.Errorf("RuleEngineConfig.Validate() gotErr = %v, wantErr %v", gotErr, tt.wantErr)
+			t.Errorf("RuleEngineConfig.Validate() gotErr:%v, wantErr:%v", gotErr, tt.wantErr)
 		})
 	}
 }
 
-func TestInput_Validate(t *testing.T) {
+func TestInput_validateAndParseValues(t *testing.T) {
 	type args struct {
 		fs Fields
 	}
@@ -590,11 +612,11 @@ func TestInput_Validate(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, gotErr := tt.input.ValidateAndPrepTypedValues(tt.args.fs)
+			got, gotErr := tt.input.validateAndParseValues(tt.args.fs)
 
 			if tt.wantErr == nil && gotErr == nil {
 				if !reflect.DeepEqual(got, tt.want) {
-					t.Errorf("Input.Validate() got %v, want %v", got, tt.want)
+					t.Errorf("Input.Validate() got:%v gotErr:%v, want:%v wantErr:%v", got, gotErr, tt.want, tt.wantErr)
 				}
 				return
 			}
@@ -603,7 +625,7 @@ func TestInput_Validate(t *testing.T) {
 				return
 			}
 
-			t.Errorf("Input.Validate() got %v  gotErr %v, want %v wantErr %v", got, gotErr, tt.want, tt.wantErr)
+			t.Errorf("Input.Validate() got:%v gotErr:%v, want:%v wantErr:%v", got, gotErr, tt.want, tt.wantErr)
 		})
 	}
 }

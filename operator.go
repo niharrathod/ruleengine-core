@@ -4,19 +4,6 @@ import (
 	"strings"
 )
 
-const (
-	GreaterOperator      = ">"
-	GreaterEqualOperator = ">="
-	LessOperator         = "<"
-	LessEqualOperator    = "<="
-	EqualOperator        = "=="
-	NotEqualOperator     = "!="
-	ContainOperator      = "contain"
-
-	NegationOperator = "not"
-	AndOperator      = "and"
-	OrOperator       = "or"
-)
 
 const (
 	firstOperand  = 0

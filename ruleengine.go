@@ -6,20 +6,10 @@ import (
 	"sort"
 )
 
-const (
-	IntType    = "int"
-	FloatType  = "float"
-	BoolType   = "bool"
-	StringType = "string"
-
-	OperandAsField    = "field"
-	OperandAsConstant = "constant"
-)
-
 type rule struct {
 	name          string
 	priority      int
-	rootEvaluator Evaluator
+	rootEvaluator evaluator
 	result        map[string]any
 }
 
@@ -43,7 +33,7 @@ func (r *rule) evaluate(ctx context.Context, input typedValueMap) (bool, *RuleEn
 	result := <-out
 
 	if ctxCancelled {
-		return false, NewError(ErrCodeContextCancelled, "ruleEvaluation : "+r.name, "")
+		return false, newError(ErrCodeContextCancelled, "ruleEvaluation : "+r.name, "")
 	}
 	return result, nil
 }
@@ -59,13 +49,26 @@ type ruleEngine struct {
 }
 
 type RuleEngine interface {
+	// Evaluates the input based on options
+	// example,
+	//
+	//  1. Evaluate(input, ruleenginecore.EvaluateOptions().Complete())
+	//     this would evaluate all rules and returns output as a slice of matched rule.
+	//
+	//  2. Evaluate(input, ruleenginecore.EvaluateOptions().AscendingPriorityBased(5))
+	//     this would evaluate rules in ascending priority order (ex : 1,2,3...) and returns top 5 matched rule as output
+	//
+	//  3. Evaluate(input, ruleenginecore.EvaluateOptions().DescendingPriorityBased(5))
+	//     this would evaluate rules in descending priority order (ex: 10,9,8...) and returns top 5 matched rule as output
 	Evaluate(ctx context.Context, input Input, op *evaluateOption) ([]*Output, *RuleEngineError)
+
+	// Evaluate the input but only one rule having given 'rulename'
 	EvaluateHavingRulename(ctx context.Context, input Input, rulename string) (*Output, *RuleEngineError)
 }
 
 // creates new rule engine with given engine configuration
 func New(engineConfig *RuleEngineConfig) (RuleEngine, *RuleEngineError) {
-	err := engineConfig.Validate()
+	err := engineConfig.validate()
 	if err != nil {
 		return nil, err
 	}
@@ -94,12 +97,12 @@ func New(engineConfig *RuleEngineConfig) (RuleEngine, *RuleEngineError) {
 	return &engine, nil
 }
 
-func prepareEvaluatorTree(cond *Condition, customConditions map[string]*ConditionType) Evaluator {
+func prepareEvaluatorTree(cond *Condition, customConditions map[string]*ConditionType) evaluator {
 	switch cType := cond.ConditionType; cType {
 	case AndOperator, OrOperator, NegationOperator:
 		logicalEval := logicalEvaluator{
 			operator:        cType,
-			innerEvaluators: []Evaluator{},
+			innerEvaluators: []evaluator{},
 		}
 
 		for _, subCondition := range cond.SubConditions {
@@ -109,7 +112,11 @@ func prepareEvaluatorTree(cond *Condition, customConditions map[string]*Conditio
 		return &logicalEval
 
 	default:
-		custCondition := customConditions[cType]
+		custCondition, ok := customConditions[cType]
+
+		if !ok {
+			panic("Could not find condition for " + cType + " type.")
+		}
 
 		switch op := custCondition.Operator; op {
 		case GreaterOperator:
@@ -126,36 +133,25 @@ func prepareEvaluatorTree(cond *Condition, customConditions map[string]*Conditio
 			return &notEqualEvaluator{operandType: custCondition.OperandType, operands: custCondition.Operands}
 		case ContainOperator:
 			return &containEvaluator{operandType: custCondition.OperandType, operands: custCondition.Operands}
+		default:
+			panic("Could not find condition for " + cType + " type.")
 		}
-
 	}
-	panic("Invalid " + cond.ConditionType + " operator type.")
 }
 
-// Evaluate the input based on options
-// example,
-//
-//  1. Evaluate(input, ruleenginecore.EvaluateOptions().Complete())
-//     this would evaluate all  rules and returns output as a slice of succeeded rule result.
-//
-//  2. Evaluate(input, ruleenginecore.EvaluateOptions().AscendingPriorityBased(5))
-//     this would evaluate rules in ascending priority order (ex : 1,2,3...) and returns top 5 succeeded rule result
-//
-//  3. Evaluate(input, ruleenginecore.EvaluateOptions().DescendingPriorityBased(5))
-//     this would evaluate rules in descending priority order (ex: 10,9,8...) and returns top 5 succeeded rule result
 func (re *ruleEngine) Evaluate(ctx context.Context, input Input, op *evaluateOption) ([]*Output, *RuleEngineError) {
-	inputVals, err := input.ValidateAndPrepTypedValues(re.fields)
+	inputVals, err := input.validateAndParseValues(re.fields)
 	if err != nil {
 		return nil, err
 	}
 
-	if op.considerPriority && op.findFirst <= 0 {
-		return nil, NewError(ErrCodeInvalidEvaluateOperations, "EvaluateOption", "priority option with 'n' should be greater than 0")
+	if op.evalType != Complete && op.limit <= 0 {
+		return nil, newError(ErrCodeInvalidEvaluateOperations, "EvaluateOption", "priority option with 'n' should be greater than 0")
 	}
 
 	result := []*Output{}
 
-	if !op.considerPriority {
+	if op.evalType == Complete {
 		for i := 0; i < len(re.rules); i++ {
 			rule := re.rules[i]
 			matched, err := rule.evaluate(ctx, inputVals)
@@ -177,7 +173,7 @@ func (re *ruleEngine) Evaluate(ctx context.Context, input Input, op *evaluateOpt
 
 		return result, nil
 
-	} else if op.ascPriority {
+	} else if op.evalType == AscendingPriorityBased {
 		for i := 0; i < len(re.rules); i++ {
 			rule := re.rules[i]
 			matched, err := rule.evaluate(ctx, inputVals)
@@ -194,8 +190,8 @@ func (re *ruleEngine) Evaluate(ctx context.Context, input Input, op *evaluateOpt
 
 				result = append(result, &out)
 
-				op.findFirst--
-				if op.findFirst == 0 {
+				op.limit--
+				if op.limit == 0 {
 					break
 				}
 			}
@@ -219,8 +215,8 @@ func (re *ruleEngine) Evaluate(ctx context.Context, input Input, op *evaluateOpt
 
 				result = append(result, &out)
 
-				op.findFirst--
-				if op.findFirst == 0 {
+				op.limit--
+				if op.limit == 0 {
 					break
 				}
 			}
@@ -229,11 +225,8 @@ func (re *ruleEngine) Evaluate(ctx context.Context, input Input, op *evaluateOpt
 	}
 }
 
-// Evaluate the input.
-// evaluates only one rule having given rulename
-// returns an error(having error code ErrCodeRuleNotFound) if rule is not found with given rulename.
 func (re *ruleEngine) EvaluateHavingRulename(ctx context.Context, input Input, rulename string) (*Output, *RuleEngineError) {
-	inputVals, err := input.ValidateAndPrepTypedValues(re.fields)
+	inputVals, err := input.validateAndParseValues(re.fields)
 	if err != nil {
 		return nil, err
 	}
@@ -255,6 +248,6 @@ func (re *ruleEngine) EvaluateHavingRulename(ctx context.Context, input Input, r
 		return nil, nil
 
 	} else {
-		return nil, NewError(ErrCodeRuleNotFound, "rulename:"+rulename, "")
+		return nil, newError(ErrCodeRuleNotFound, "rulename:"+rulename, "")
 	}
 }

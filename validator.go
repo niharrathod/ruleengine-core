@@ -22,11 +22,10 @@ func init() {
 // 2. does field having <name> have type <fType>
 func (fs Fields) isValid(name, fType string) *RuleEngineError {
 	if ft, ok := fs[name]; !ok {
-		return NewError(ErrCodeFieldNotFound, "Field:"+name, "")
+		return newError(ErrCodeFieldNotFound, "Field:"+name, "")
 	} else if ft != fType {
-		return NewError(ErrCodeInvalidValueType, "field:"+name, "field is having type"+ft+" expected type :"+fType)
+		return newError(ErrCodeInvalidValueType, "field:"+name, "field is having type:"+ft+" condition is expecting type:"+fType)
 	}
-
 	return nil
 }
 
@@ -34,10 +33,9 @@ func (fs Fields) isValid(name, fType string) *RuleEngineError {
 func (fs Fields) validate() *RuleEngineError {
 	for name, fType := range fs {
 		if _, ok := validValueTypeMap[fType]; !ok {
-			return NewError(ErrCodeInvalidValueType, "field:"+name, "fieldType is invalid. valid types are "+printableValidValueType)
+			return newError(ErrCodeInvalidValueType, "field:"+name, "fieldType is invalid. valid types are "+printableValidValueType)
 		}
 	}
-
 	return nil
 }
 
@@ -46,60 +44,60 @@ func (fs Fields) validate() *RuleEngineError {
 // 2. valid number of operands for given operator
 // 3. valid operand type for given operator
 // 4. for OperandAsField, match operandType with field type.
-func (c *ConditionType) validateAndPrepTypedValues(name string, fs Fields) *RuleEngineError {
+func (c *ConditionType) validateAndParseValues(name string, fs Fields) *RuleEngineError {
 
 	if _, ok := validOperatorMap[c.Operator]; !ok {
-		return NewError(ErrCodeInvalidOperator, "condition:"+name, c.Operator+" is invalid operator")
+		return newError(ErrCodeInvalidOperator, "condition:"+name, c.Operator+" is invalid operator")
 	}
 
 	if c.Operator == ContainOperator {
 		if len(c.Operands) != 2 {
-			return NewError(ErrCodeInvalidOperandsLength, "condition:"+name, c.Operator+" operator expects exactly two operands")
+			return newError(ErrCodeInvalidOperandsLength, "condition:"+name, c.Operator+" operator expects exactly two operands")
 		}
 
 		if c.OperandType != StringType {
-			return NewError(ErrCodeInvalidOperandType, "condition:"+name, c.Operator+" operator only supports '"+StringType+"' type")
+			return newError(ErrCodeInvalidOperandType, "condition:"+name, c.Operator+" operator only supports '"+StringType+"' type")
 		}
 
 		for _, operand := range c.Operands {
 			if operand.OperandAs == OperandAsField {
 				if err := fs.isValid(operand.Val, c.OperandType); err != nil {
-					return err
+					return newError(err.ErrCode, "condition:"+name, err.OtherMsg)
 				}
 			} else if operand.OperandAs == OperandAsConstant {
 				if typedValue, err := getTypedValue(operand.Val, c.OperandType); err != nil {
-					return NewError(ErrCodeFailedParsingInput, "condition:"+name, err.Error())
+					return newError(ErrCodeFailedParsingInput, "condition:"+name, err.Error())
 				} else {
 					operand.typedValue = typedValue
 				}
 			} else {
-				return NewError(ErrCodeInvalidOperandAs, "condition:"+name, operand.OperandAs+" is invalid. valid operandAs are "+OperandAsField+", "+OperandAsConstant)
+				return newError(ErrCodeInvalidOperandAs, "condition:"+name, operand.OperandAs+" is invalid. valid operandAs are "+OperandAsField+", "+OperandAsConstant)
 			}
 		}
 	}
 
 	if c.Operator == EqualOperator || c.Operator == NotEqualOperator {
 		if len(c.Operands) != 2 {
-			return NewError(ErrCodeInvalidOperandsLength, "For condition:"+name, c.Operator+" operator expects exactly two operands")
+			return newError(ErrCodeInvalidOperandsLength, "For condition:"+name, c.Operator+" operator expects exactly two operands")
 		}
 
 		if _, ok := validValueTypeMap[c.OperandType]; !ok {
-			return NewError(ErrCodeInvalidOperandType, "condition:"+name, c.Operator+" operator supports "+printableValidValueType+" types")
+			return newError(ErrCodeInvalidOperandType, "condition:"+name, c.Operator+" operator supports "+printableValidValueType+" types")
 		}
 
 		for _, operand := range c.Operands {
 			if operand.OperandAs == OperandAsField {
 				if err := fs.isValid(operand.Val, c.OperandType); err != nil {
-					return err
+					return newError(err.ErrCode, "condition:"+name, err.OtherMsg)
 				}
 			} else if operand.OperandAs == OperandAsConstant {
 				if typedValue, err := getTypedValue(operand.Val, c.OperandType); err != nil {
-					return NewError(ErrCodeFailedParsingInput, "condition:"+name, err.Error())
+					return newError(ErrCodeFailedParsingInput, "condition:"+name, err.Error())
 				} else {
 					operand.typedValue = typedValue
 				}
 			} else {
-				return NewError(ErrCodeInvalidOperandAs, "condition:"+name, operand.OperandAs+" is invalid. valid operandAs are "+OperandAsField+", "+OperandAsConstant)
+				return newError(ErrCodeInvalidOperandAs, "condition:"+name, operand.OperandAs+" is invalid. valid operandAs are "+OperandAsField+", "+OperandAsConstant)
 			}
 		}
 	}
@@ -107,26 +105,26 @@ func (c *ConditionType) validateAndPrepTypedValues(name string, fs Fields) *Rule
 	if c.Operator == GreaterOperator || c.Operator == GreaterEqualOperator || c.Operator == LessOperator || c.Operator == LessEqualOperator {
 
 		if len(c.Operands) != 2 {
-			return NewError(ErrCodeInvalidOperandsLength, "condition:"+name, c.Operator+" operator expects exactly two operands")
+			return newError(ErrCodeInvalidOperandsLength, "condition:"+name, c.Operator+" operator expects exactly two operands")
 		}
 
 		if c.OperandType != IntType && c.OperandType != FloatType {
-			return NewError(ErrCodeInvalidOperandType, "condition:"+name, c.Operator+" operator supports "+IntType+", "+FloatType+" types")
+			return newError(ErrCodeInvalidOperandType, "condition:"+name, c.Operator+" operator supports "+IntType+", "+FloatType+" types")
 		}
 
 		for _, operand := range c.Operands {
 			if operand.OperandAs == OperandAsField {
 				if err := fs.isValid(operand.Val, c.OperandType); err != nil {
-					return err
+					return newError(err.ErrCode, "condition:"+name, err.OtherMsg)
 				}
 			} else if operand.OperandAs == OperandAsConstant {
 				if typedValue, err := getTypedValue(operand.Val, c.OperandType); err != nil {
-					return NewError(ErrCodeFailedParsingInput, "condition:"+name, err.Error())
+					return newError(ErrCodeFailedParsingInput, "condition:"+name, err.Error())
 				} else {
 					operand.typedValue = typedValue
 				}
 			} else {
-				return NewError(ErrCodeInvalidOperandAs, "condition:"+name, operand.OperandAs+" is invalid. valid operandAs are "+OperandAsField+", "+OperandAsConstant)
+				return newError(ErrCodeInvalidOperandAs, "condition:"+name, operand.OperandAs+" is invalid. valid operandAs are "+OperandAsField+", "+OperandAsConstant)
 			}
 		}
 	}
@@ -146,7 +144,7 @@ func validateCondition(name string, c *Condition, custConditionType map[string]*
 	if c.ConditionType == OrOperator || c.ConditionType == AndOperator {
 
 		if len(c.SubConditions) < 2 {
-			return NewError(ErrCodeInvalidSubConditionCount, "rule:"+name, "conditionType:"+c.ConditionType+" expects at-least 2 sub-conditions")
+			return newError(ErrCodeInvalidSubConditionCount, "rule:"+name, "conditionType:"+c.ConditionType+" expects at-least 2 sub-conditions")
 		}
 
 		for _, cond := range c.SubConditions {
@@ -160,7 +158,7 @@ func validateCondition(name string, c *Condition, custConditionType map[string]*
 	if c.ConditionType == NegationOperator {
 
 		if len(c.SubConditions) != 1 {
-			return NewError(ErrCodeInvalidSubConditionCount, "rule:"+name, "conditionType:"+c.ConditionType+" expects exactly one sub-condition")
+			return newError(ErrCodeInvalidSubConditionCount, "rule:"+name, "conditionType:"+c.ConditionType+" expects exactly one sub-condition")
 		}
 
 		for _, cond := range c.SubConditions {
@@ -175,18 +173,18 @@ func validateCondition(name string, c *Condition, custConditionType map[string]*
 		return nil
 	}
 
-	return NewError(ErrCodeConditionTypeNotFound, "rule:"+name, "conditionType:"+c.ConditionType+" not found")
+	return newError(ErrCodeConditionTypeNotFound, "rule:"+name, "conditionType:"+c.ConditionType+" not found")
 }
 
 // validates for valid types, operators, condition definition and rule definition.
-func (c *RuleEngineConfig) Validate() *RuleEngineError {
+func (c *RuleEngineConfig) validate() *RuleEngineError {
 	err := c.Fields.validate()
 	if err != nil {
 		return err
 	}
 
 	for conditionName, customCondition := range c.ConditionTypes {
-		if err := customCondition.validateAndPrepTypedValues(conditionName, c.Fields); err != nil {
+		if err := customCondition.validateAndParseValues(conditionName, c.Fields); err != nil {
 			return err
 		}
 	}
@@ -201,16 +199,16 @@ func (c *RuleEngineConfig) Validate() *RuleEngineError {
 }
 
 // validates for mandatory fields and type conversion from string to respective field type
-func (input Input) ValidateAndPrepTypedValues(fs Fields) (typedValueMap, *RuleEngineError) {
+func (input Input) validateAndParseValues(fs Fields) (typedValueMap, *RuleEngineError) {
 	ret := typedValueMap{}
 	for fieldname, fieldtype := range fs {
 		strVal, found := input[fieldname]
 		if !found {
-			return nil, NewError(ErrCodeFieldNotFound, "input", "field:"+fieldname+" with type:"+fieldtype+" is mandatory")
+			return nil, newError(ErrCodeFieldNotFound, "input", "field:"+fieldname+" with type:"+fieldtype+" is mandatory")
 		}
 
 		if val, err := getTypedValue(strVal, fieldtype); err != nil {
-			return nil, NewError(ErrCodeFailedParsingInput, "input:"+fieldname, err.Error())
+			return nil, newError(ErrCodeFailedParsingInput, "input:"+fieldname, err.Error())
 		} else {
 			ret[fieldname] = val
 		}
