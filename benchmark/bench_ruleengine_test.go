@@ -20,11 +20,11 @@ var invalidInput = ruleenginecore.Input{}
 var resultTemp any
 
 func init() {
-	ruleEngine_10_Rule = prepareRuleEngine("/generator/ruleEngineConfig_10.json")
-	ruleEngine_100_Rule = prepareRuleEngine("/generator/ruleEngineConfig_100.json")
-	ruleEngine_1000_Rule = prepareRuleEngine("/generator/ruleEngineConfig_1000.json")
-	validInput = prepareInput("/generator/ValidInput.json")
-	invalidInput = prepareInput("/generator/InvalidInput.json")
+	ruleEngine_10_Rule = prepareRuleEngine("generator/ruleEngineConfig_10.json")
+	ruleEngine_100_Rule = prepareRuleEngine("generator/ruleEngineConfig_100.json")
+	ruleEngine_1000_Rule = prepareRuleEngine("generator/ruleEngineConfig_1000.json")
+	validInput = prepareInput("generator/ValidInput.json")
+	invalidInput = prepareInput("generator/InvalidInput.json")
 }
 
 func Benchmark_RuleEngine_10_Rule_EvaluateComplete(b *testing.B) {
@@ -85,7 +85,7 @@ func Benchmark_RuleEngine_1000_Rule_EvaluateComplete(b *testing.B) {
 
 func prepareRuleEngine(configJsonFile string) ruleenginecore.RuleEngine {
 	wd, _ := os.Getwd()
-	valBytes, _ := os.ReadFile(wd + configJsonFile)
+	valBytes, _ := os.ReadFile(wd + "/" + configJsonFile)
 	var engineConfig ruleenginecore.RuleEngineConfig
 	err := json.Unmarshal(valBytes, &engineConfig)
 
@@ -118,6 +118,6 @@ func prepareInput(filename string) ruleenginecore.Input {
 
 func readJsonFile(filename string) []byte {
 	wd, _ := os.Getwd()
-	valBytes, _ := os.ReadFile(wd + filename)
+	valBytes, _ := os.ReadFile(wd + "/" + filename)
 	return valBytes
 }
