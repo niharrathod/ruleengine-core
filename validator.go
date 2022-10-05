@@ -177,7 +177,7 @@ func validateCondition(name string, c *Condition, custConditionType map[string]*
 }
 
 // validates for valid types, operators, condition definition and rule definition.
-func (c *RuleEngineConfig) validate() *RuleEngineError {
+func (c *RuleEngineConfig) Validate() *RuleEngineError {
 	err := c.Fields.validate()
 	if err != nil {
 		return err

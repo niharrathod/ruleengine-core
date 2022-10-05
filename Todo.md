@@ -7,6 +7,6 @@
 ## Enhancement
 
 - [X] [Yes] [context](https://pkg.go.dev/context) aware evaluate operation
-- [ ] [Yes] Benchmarking
+- [X] [Yes] Benchmarking
 - [ ] [MayBe] Introduce caching for intermediate evaluation result to avoid re-evaluation
 - [ ] [MayBe] concurrent rule evaluation
