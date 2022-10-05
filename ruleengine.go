@@ -68,7 +68,7 @@ type RuleEngine interface {
 
 // creates new rule engine with given engine configuration
 func New(engineConfig *RuleEngineConfig) (RuleEngine, *RuleEngineError) {
-	err := engineConfig.validate()
+	err := engineConfig.Validate()
 	if err != nil {
 		return nil, err
 	}

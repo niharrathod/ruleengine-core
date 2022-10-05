@@ -539,7 +539,7 @@ func TestRuleEngineConfig_validate(t *testing.T) {
 				Rules:          tt.ruleEngineConfig.Rules,
 			}
 
-			gotErr := c.validate()
+			gotErr := c.Validate()
 
 			if (tt.wantErr == nil) && (gotErr == nil) {
 				return
