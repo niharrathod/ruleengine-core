@@ -8,12 +8,12 @@ const (
 	DescendingPriorityBased
 )
 
-type evaluateOption struct {
+type EvaluateOption struct {
 	evalType evaluationType
 	limit    uint
 }
 
-var complete = evaluateOption{
+var complete = EvaluateOption{
 	evalType: Complete,
 }
 
@@ -22,21 +22,21 @@ type evaluateOptionSelector bool
 var evaluateOpSelector evaluateOptionSelector
 
 // all rules are evaluated without any rule priority consideration
-func (e *evaluateOptionSelector) Complete() *evaluateOption {
+func (e *evaluateOptionSelector) Complete() *EvaluateOption {
 	return &complete
 }
 
 // ascending priority based first n matched rules as outcome
-func (e *evaluateOptionSelector) AscendingPriorityBased(n uint) *evaluateOption {
-	return &evaluateOption{
+func (e *evaluateOptionSelector) AscendingPriorityBased(n uint) *EvaluateOption {
+	return &EvaluateOption{
 		evalType: AscendingPriorityBased,
 		limit:    n,
 	}
 }
 
 // descending priority based first n matched rules as outcome
-func (e *evaluateOptionSelector) DescendingPriorityBased(n uint) *evaluateOption {
-	return &evaluateOption{
+func (e *evaluateOptionSelector) DescendingPriorityBased(n uint) *EvaluateOption {
+	return &EvaluateOption{
 		evalType: DescendingPriorityBased,
 		limit:    n,
 	}
