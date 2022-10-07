@@ -346,7 +346,7 @@ func Test_ruleEngine_Evaluate(t *testing.T) {
 	}
 	type args struct {
 		input Input
-		op    *evaluateOption
+		op    *EvaluateOption
 	}
 	tests := []struct {
 		name    string
@@ -563,7 +563,7 @@ func Test_ruleEngine_Evaluate_ContextAware(t *testing.T) {
 	}
 	type args struct {
 		input Input
-		op    *evaluateOption
+		op    *EvaluateOption
 	}
 	tests := []struct {
 		name                  string

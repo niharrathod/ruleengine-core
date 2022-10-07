@@ -60,7 +60,7 @@ type RuleEngine interface {
 	//
 	//  3. Evaluate(input, ruleenginecore.EvaluateOptions().DescendingPriorityBased(5))
 	//     this would evaluate rules in descending priority order (ex: 10,9,8...) and returns top 5 matched rule as output
-	Evaluate(ctx context.Context, input Input, op *evaluateOption) ([]*Output, *RuleEngineError)
+	Evaluate(ctx context.Context, input Input, op *EvaluateOption) ([]*Output, *RuleEngineError)
 
 	// Evaluate the input but only one rule having given 'rulename'
 	EvaluateHavingRulename(ctx context.Context, input Input, rulename string) (*Output, *RuleEngineError)
@@ -139,7 +139,7 @@ func prepareEvaluatorTree(cond *Condition, customConditions map[string]*Conditio
 	}
 }
 
-func (re *ruleEngine) Evaluate(ctx context.Context, input Input, op *evaluateOption) ([]*Output, *RuleEngineError) {
+func (re *ruleEngine) Evaluate(ctx context.Context, input Input, op *EvaluateOption) ([]*Output, *RuleEngineError) {
 	inputVals, err := input.validateAndParseValues(re.fields)
 	if err != nil {
 		return nil, err
