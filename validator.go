@@ -60,18 +60,18 @@ func (c *ConditionType) validateAndParseValues(name string, fs Fields) *RuleEngi
 		}
 
 		for _, operand := range c.Operands {
-			if operand.OperandAs == OperandAsField {
+			if operand.Type == FieldType {
 				if err := fs.isValid(operand.Val, c.OperandType); err != nil {
 					return newError(err.ErrCode, "condition:"+name, err.OtherMsg)
 				}
-			} else if operand.OperandAs == OperandAsConstant {
+			} else if operand.Type == ConstantType {
 				if typedValue, err := getTypedValue(operand.Val, c.OperandType); err != nil {
 					return newError(ErrCodeFailedParsingInput, "condition:"+name, err.Error())
 				} else {
 					operand.typedValue = typedValue
 				}
 			} else {
-				return newError(ErrCodeInvalidOperandAs, "condition:"+name, operand.OperandAs+" is invalid. valid operandAs are "+OperandAsField+", "+OperandAsConstant)
+				return newError(ErrCodeInvalidOperandAs, "condition:"+name, operand.Type.String()+" is invalid. valid operandAs are "+FieldType.String()+", "+ConstantType.String())
 			}
 		}
 	}
@@ -86,18 +86,18 @@ func (c *ConditionType) validateAndParseValues(name string, fs Fields) *RuleEngi
 		}
 
 		for _, operand := range c.Operands {
-			if operand.OperandAs == OperandAsField {
+			if operand.Type == FieldType {
 				if err := fs.isValid(operand.Val, c.OperandType); err != nil {
 					return newError(err.ErrCode, "condition:"+name, err.OtherMsg)
 				}
-			} else if operand.OperandAs == OperandAsConstant {
+			} else if operand.Type == ConstantType {
 				if typedValue, err := getTypedValue(operand.Val, c.OperandType); err != nil {
 					return newError(ErrCodeFailedParsingInput, "condition:"+name, err.Error())
 				} else {
 					operand.typedValue = typedValue
 				}
 			} else {
-				return newError(ErrCodeInvalidOperandAs, "condition:"+name, operand.OperandAs+" is invalid. valid operandAs are "+OperandAsField+", "+OperandAsConstant)
+				return newError(ErrCodeInvalidOperandAs, "condition:"+name, operand.Type.String()+" is invalid. valid operandAs are "+FieldType.String()+", "+ConstantType.String())
 			}
 		}
 	}
@@ -113,18 +113,18 @@ func (c *ConditionType) validateAndParseValues(name string, fs Fields) *RuleEngi
 		}
 
 		for _, operand := range c.Operands {
-			if operand.OperandAs == OperandAsField {
+			if operand.Type == FieldType {
 				if err := fs.isValid(operand.Val, c.OperandType); err != nil {
 					return newError(err.ErrCode, "condition:"+name, err.OtherMsg)
 				}
-			} else if operand.OperandAs == OperandAsConstant {
+			} else if operand.Type == ConstantType {
 				if typedValue, err := getTypedValue(operand.Val, c.OperandType); err != nil {
 					return newError(ErrCodeFailedParsingInput, "condition:"+name, err.Error())
 				} else {
 					operand.typedValue = typedValue
 				}
 			} else {
-				return newError(ErrCodeInvalidOperandAs, "condition:"+name, operand.OperandAs+" is invalid. valid operandAs are "+OperandAsField+", "+OperandAsConstant)
+				return newError(ErrCodeInvalidOperandAs, "condition:"+name, operand.Type.String()+" is invalid. valid operandAs are "+FieldType.String()+", "+ConstantType.String())
 			}
 		}
 	}

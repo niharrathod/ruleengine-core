@@ -19,14 +19,6 @@ const (
 	StringType = "string"
 )
 
-// OperandAs either field or constant
-const (
-	// operand is considered as field and value is determined from the Input
-	OperandAsField = "field"
-
-	// operand is considered as constant and value is determined from Operand.Val
-	OperandAsConstant = "constant"
-)
 
 // allowed operators to define custom ConditionType
 const (
@@ -82,7 +74,7 @@ type Fields map[string]string
 //		->operand.Val is considered as operand value in a string form.
 type Operand struct {
 	// define operand as field or constant. valid values are 'field' and 'constant'
-	OperandAs string `json:"operandAs"`
+	Type OperandType `json:"type"`
 
 	// value of an operand
 	//
@@ -96,13 +88,14 @@ type Operand struct {
 }
 
 func (op *Operand) getValue(input typedValueMap) any {
-	switch op.OperandAs {
-	case OperandAsField:
+	switch op.Type {
+	case FieldType:
 		return input[op.Val]
-	case OperandAsConstant:
+	case ConstantType:
 		return op.typedValue
 	}
-	panic("Invalid OperandAs " + op.OperandAs)
+	// never executed
+	panic(fmt.Sprintf("Invalid OperandType %v", op.Type))
 }
 
 // defines a custom condition type

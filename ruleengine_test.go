@@ -16,11 +16,11 @@ var discount10TestRule = &rule{
 				operandType: IntType,
 				operands: []*Operand{
 					{
-						OperandAs: OperandAsField,
-						Val:       "totalAmount",
+						Type: FieldType,
+						Val:  "totalAmount",
 					},
 					{
-						OperandAs:  OperandAsConstant,
+						Type:       ConstantType,
 						Val:        "20000",
 						typedValue: int64(20000),
 					},
@@ -30,11 +30,11 @@ var discount10TestRule = &rule{
 				operandType: BoolType,
 				operands: []*Operand{
 					{
-						OperandAs: OperandAsField,
-						Val:       "IsHotelBooking",
+						Type: FieldType,
+						Val:  "IsHotelBooking",
 					},
 					{
-						OperandAs:  OperandAsConstant,
+						Type:       ConstantType,
 						Val:        "true",
 						typedValue: true,
 					},
@@ -44,11 +44,11 @@ var discount10TestRule = &rule{
 				operandType: IntType,
 				operands: []*Operand{
 					{
-						OperandAs: OperandAsField,
-						Val:       "PaxCount",
+						Type: FieldType,
+						Val:  "PaxCount",
 					},
 					{
-						OperandAs:  OperandAsConstant,
+						Type:       ConstantType,
 						Val:        "5",
 						typedValue: int64(5),
 					},
@@ -71,11 +71,11 @@ var discount5TestRule = &rule{
 				operandType: IntType,
 				operands: []*Operand{
 					{
-						OperandAs: OperandAsField,
-						Val:       "totalAmount",
+						Type: FieldType,
+						Val:  "totalAmount",
 					},
 					{
-						OperandAs:  OperandAsConstant,
+						Type:       ConstantType,
 						Val:        "20000",
 						typedValue: int64(20000),
 					},
@@ -85,11 +85,11 @@ var discount5TestRule = &rule{
 				operandType: BoolType,
 				operands: []*Operand{
 					{
-						OperandAs: OperandAsField,
-						Val:       "IsHotelBooking",
+						Type: FieldType,
+						Val:  "IsHotelBooking",
 					},
 					{
-						OperandAs:  OperandAsConstant,
+						Type:       ConstantType,
 						Val:        "true",
 						typedValue: true,
 					},
@@ -102,11 +102,11 @@ var discount5TestRule = &rule{
 						operandType: IntType,
 						operands: []*Operand{
 							{
-								OperandAs: OperandAsField,
-								Val:       "PaxCount",
+								Type: FieldType,
+								Val:  "PaxCount",
 							},
 							{
-								OperandAs:  OperandAsConstant,
+								Type:       ConstantType,
 								Val:        "5",
 								typedValue: int64(5),
 							},
@@ -131,11 +131,11 @@ var discount2TestRule = &rule{
 				operandType: IntType,
 				operands: []*Operand{
 					{
-						OperandAs: OperandAsField,
-						Val:       "totalAmount",
+						Type: FieldType,
+						Val:  "totalAmount",
 					},
 					{
-						OperandAs:  OperandAsConstant,
+						Type:       ConstantType,
 						Val:        "10000",
 						typedValue: int64(10000),
 					},
@@ -145,11 +145,11 @@ var discount2TestRule = &rule{
 				operandType: BoolType,
 				operands: []*Operand{
 					{
-						OperandAs: OperandAsField,
-						Val:       "IsHotelBooking",
+						Type: FieldType,
+						Val:  "IsHotelBooking",
 					},
 					{
-						OperandAs:  OperandAsConstant,
+						Type:       ConstantType,
 						Val:        "true",
 						typedValue: true,
 					},
@@ -159,11 +159,11 @@ var discount2TestRule = &rule{
 				operandType: IntType,
 				operands: []*Operand{
 					{
-						OperandAs: OperandAsField,
-						Val:       "PaxCount",
+						Type: FieldType,
+						Val:  "PaxCount",
 					},
 					{
-						OperandAs:  OperandAsConstant,
+						Type:       ConstantType,
 						Val:        "2",
 						typedValue: int64(2),
 					},
@@ -201,12 +201,12 @@ func TestCreateRuleEngine(t *testing.T) {
 							OperandType: IntType,
 							Operands: []*Operand{
 								{
-									OperandAs: OperandAsField,
-									Val:       "totalAmount",
+									Type: FieldType,
+									Val:  "totalAmount",
 								},
 								{
-									OperandAs: OperandAsConstant,
-									Val:       "20000",
+									Type: ConstantType,
+									Val:  "20000",
 								},
 							},
 						},
@@ -215,12 +215,12 @@ func TestCreateRuleEngine(t *testing.T) {
 							OperandType: BoolType,
 							Operands: []*Operand{
 								{
-									OperandAs: OperandAsField,
-									Val:       "IsHotelBooking",
+									Type: FieldType,
+									Val:  "IsHotelBooking",
 								},
 								{
-									OperandAs: OperandAsConstant,
-									Val:       "true",
+									Type: ConstantType,
+									Val:  "true",
 								},
 							},
 						},
@@ -229,12 +229,12 @@ func TestCreateRuleEngine(t *testing.T) {
 							OperandType: IntType,
 							Operands: []*Operand{
 								{
-									OperandAs: OperandAsField,
-									Val:       "PaxCount",
+									Type: FieldType,
+									Val:  "PaxCount",
 								},
 								{
-									OperandAs: OperandAsConstant,
-									Val:       "5",
+									Type: ConstantType,
+									Val:  "5",
 								},
 							},
 						},

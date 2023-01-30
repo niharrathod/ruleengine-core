@@ -187,11 +187,11 @@ func Test_greaterEvaluator_evaluate(t *testing.T) {
 				operandType: IntType,
 				operands: []*Operand{
 					{
-						OperandAs: OperandAsField,
-						Val:       "count",
+						Type: FieldType,
+						Val:  "count",
 					},
 					{
-						OperandAs:  OperandAsConstant,
+						Type:       ConstantType,
 						Val:        "10",
 						typedValue: int64(10),
 					},
@@ -211,11 +211,11 @@ func Test_greaterEvaluator_evaluate(t *testing.T) {
 				operandType: IntType,
 				operands: []*Operand{
 					{
-						OperandAs: OperandAsField,
-						Val:       "count",
+						Type: FieldType,
+						Val:  "count",
 					},
 					{
-						OperandAs:  OperandAsConstant,
+						Type:       ConstantType,
 						Val:        "10",
 						typedValue: int64(10),
 					},
@@ -235,11 +235,11 @@ func Test_greaterEvaluator_evaluate(t *testing.T) {
 				operandType: IntType,
 				operands: []*Operand{
 					{
-						OperandAs: OperandAsField,
-						Val:       "count",
+						Type: FieldType,
+						Val:  "count",
 					},
 					{
-						OperandAs:  OperandAsConstant,
+						Type:       ConstantType,
 						Val:        "asdf",
 						typedValue: "asdf", // invalid
 					},
@@ -259,11 +259,11 @@ func Test_greaterEvaluator_evaluate(t *testing.T) {
 				operandType: FloatType,
 				operands: []*Operand{
 					{
-						OperandAs: OperandAsField,
-						Val:       "count",
+						Type: FieldType,
+						Val:  "count",
 					},
 					{
-						OperandAs:  OperandAsConstant,
+						Type:       ConstantType,
 						Val:        "10.1",
 						typedValue: float64(10.1),
 					},
@@ -283,11 +283,11 @@ func Test_greaterEvaluator_evaluate(t *testing.T) {
 				operandType: FloatType,
 				operands: []*Operand{
 					{
-						OperandAs: OperandAsField,
-						Val:       "count",
+						Type: FieldType,
+						Val:  "count",
 					},
 					{
-						OperandAs:  OperandAsConstant,
+						Type:       ConstantType,
 						Val:        "10.1",
 						typedValue: float64(10.1),
 					},
@@ -307,11 +307,11 @@ func Test_greaterEvaluator_evaluate(t *testing.T) {
 				operandType: FloatType,
 				operands: []*Operand{
 					{
-						OperandAs: OperandAsField,
-						Val:       "count",
+						Type: FieldType,
+						Val:  "count",
 					},
 					{
-						OperandAs:  OperandAsConstant,
+						Type:       ConstantType,
 						Val:        "asdf",
 						typedValue: "asdf", // invalid
 					},
@@ -331,11 +331,11 @@ func Test_greaterEvaluator_evaluate(t *testing.T) {
 				operandType: "panic",
 				operands: []*Operand{
 					{
-						OperandAs: OperandAsField,
-						Val:       "count",
+						Type: FieldType,
+						Val:  "count",
 					},
 					{
-						OperandAs:  OperandAsConstant,
+						Type:       ConstantType,
 						Val:        "10.1",
 						typedValue: 10.1,
 					},
@@ -397,11 +397,11 @@ func Test_greaterEqualEvaluator_evaluate(t *testing.T) {
 				operandType: IntType,
 				operands: []*Operand{
 					{
-						OperandAs: OperandAsField,
-						Val:       "count",
+						Type: FieldType,
+						Val:  "count",
 					},
 					{
-						OperandAs:  OperandAsConstant,
+						Type:       ConstantType,
 						Val:        "10",
 						typedValue: int64(10),
 					},
@@ -421,11 +421,11 @@ func Test_greaterEqualEvaluator_evaluate(t *testing.T) {
 				operandType: IntType,
 				operands: []*Operand{
 					{
-						OperandAs: OperandAsField,
-						Val:       "count",
+						Type: FieldType,
+						Val:  "count",
 					},
 					{
-						OperandAs:  OperandAsConstant,
+						Type:       ConstantType,
 						Val:        "10",
 						typedValue: int64(10),
 					},
@@ -445,11 +445,11 @@ func Test_greaterEqualEvaluator_evaluate(t *testing.T) {
 				operandType: IntType,
 				operands: []*Operand{
 					{
-						OperandAs: OperandAsField,
-						Val:       "count",
+						Type: FieldType,
+						Val:  "count",
 					},
 					{
-						OperandAs:  OperandAsConstant,
+						Type:       ConstantType,
 						Val:        "asdf",
 						typedValue: "asdf", // invalid
 					},
@@ -469,11 +469,11 @@ func Test_greaterEqualEvaluator_evaluate(t *testing.T) {
 				operandType: FloatType,
 				operands: []*Operand{
 					{
-						OperandAs: OperandAsField,
-						Val:       "count",
+						Type: FieldType,
+						Val:  "count",
 					},
 					{
-						OperandAs:  OperandAsConstant,
+						Type:       ConstantType,
 						Val:        "10.1",
 						typedValue: float64(10.1),
 					},
@@ -493,11 +493,11 @@ func Test_greaterEqualEvaluator_evaluate(t *testing.T) {
 				operandType: FloatType,
 				operands: []*Operand{
 					{
-						OperandAs: OperandAsField,
-						Val:       "count",
+						Type: FieldType,
+						Val:  "count",
 					},
 					{
-						OperandAs:  OperandAsConstant,
+						Type:       ConstantType,
 						Val:        "10.1",
 						typedValue: float64(10.1),
 					},
@@ -517,11 +517,11 @@ func Test_greaterEqualEvaluator_evaluate(t *testing.T) {
 				operandType: FloatType,
 				operands: []*Operand{
 					{
-						OperandAs: OperandAsField,
-						Val:       "count",
+						Type: FieldType,
+						Val:  "count",
 					},
 					{
-						OperandAs:  OperandAsConstant,
+						Type:       ConstantType,
 						Val:        "asdf",
 						typedValue: "asdf", // invalid
 					},
@@ -541,11 +541,11 @@ func Test_greaterEqualEvaluator_evaluate(t *testing.T) {
 				operandType: "panic",
 				operands: []*Operand{
 					{
-						OperandAs: OperandAsField,
-						Val:       "count",
+						Type: FieldType,
+						Val:  "count",
 					},
 					{
-						OperandAs:  OperandAsConstant,
+						Type:       ConstantType,
 						Val:        "10.1",
 						typedValue: 10.1,
 					},
@@ -606,11 +606,11 @@ func Test_lessEvaluator_evaluate(t *testing.T) {
 				operandType: IntType,
 				operands: []*Operand{
 					{
-						OperandAs: OperandAsField,
-						Val:       "count",
+						Type: FieldType,
+						Val:  "count",
 					},
 					{
-						OperandAs:  OperandAsConstant,
+						Type:       ConstantType,
 						Val:        "20",
 						typedValue: int64(20),
 					},
@@ -630,11 +630,11 @@ func Test_lessEvaluator_evaluate(t *testing.T) {
 				operandType: IntType,
 				operands: []*Operand{
 					{
-						OperandAs: OperandAsField,
-						Val:       "count",
+						Type: FieldType,
+						Val:  "count",
 					},
 					{
-						OperandAs:  OperandAsConstant,
+						Type:       ConstantType,
 						Val:        "20",
 						typedValue: int64(20),
 					},
@@ -654,11 +654,11 @@ func Test_lessEvaluator_evaluate(t *testing.T) {
 				operandType: IntType,
 				operands: []*Operand{
 					{
-						OperandAs: OperandAsField,
-						Val:       "count",
+						Type: FieldType,
+						Val:  "count",
 					},
 					{
-						OperandAs:  OperandAsConstant,
+						Type:       ConstantType,
 						Val:        "asdf",
 						typedValue: "asdf", // invalid
 					},
@@ -678,11 +678,11 @@ func Test_lessEvaluator_evaluate(t *testing.T) {
 				operandType: FloatType,
 				operands: []*Operand{
 					{
-						OperandAs: OperandAsField,
-						Val:       "count",
+						Type: FieldType,
+						Val:  "count",
 					},
 					{
-						OperandAs:  OperandAsConstant,
+						Type:       ConstantType,
 						Val:        "20.1",
 						typedValue: float64(20.1),
 					},
@@ -702,11 +702,11 @@ func Test_lessEvaluator_evaluate(t *testing.T) {
 				operandType: FloatType,
 				operands: []*Operand{
 					{
-						OperandAs: OperandAsField,
-						Val:       "count",
+						Type: FieldType,
+						Val:  "count",
 					},
 					{
-						OperandAs:  OperandAsConstant,
+						Type:       ConstantType,
 						Val:        "20.1",
 						typedValue: float64(20.1),
 					},
@@ -726,11 +726,11 @@ func Test_lessEvaluator_evaluate(t *testing.T) {
 				operandType: FloatType,
 				operands: []*Operand{
 					{
-						OperandAs: OperandAsField,
-						Val:       "count",
+						Type: FieldType,
+						Val:  "count",
 					},
 					{
-						OperandAs:  OperandAsConstant,
+						Type:       ConstantType,
 						Val:        "asdf",
 						typedValue: "asdf", // invalid
 					},
@@ -750,11 +750,11 @@ func Test_lessEvaluator_evaluate(t *testing.T) {
 				operandType: "panic",
 				operands: []*Operand{
 					{
-						OperandAs: OperandAsField,
-						Val:       "count",
+						Type: FieldType,
+						Val:  "count",
 					},
 					{
-						OperandAs:  OperandAsConstant,
+						Type:       ConstantType,
 						Val:        "20.1",
 						typedValue: 20.1,
 					},
@@ -816,11 +816,11 @@ func Test_lessEqualEvaluator_evaluate(t *testing.T) {
 				operandType: IntType,
 				operands: []*Operand{
 					{
-						OperandAs: OperandAsField,
-						Val:       "count",
+						Type: FieldType,
+						Val:  "count",
 					},
 					{
-						OperandAs:  OperandAsConstant,
+						Type:       ConstantType,
 						Val:        "20",
 						typedValue: int64(20),
 					},
@@ -840,11 +840,11 @@ func Test_lessEqualEvaluator_evaluate(t *testing.T) {
 				operandType: IntType,
 				operands: []*Operand{
 					{
-						OperandAs: OperandAsField,
-						Val:       "count",
+						Type: FieldType,
+						Val:  "count",
 					},
 					{
-						OperandAs:  OperandAsConstant,
+						Type:       ConstantType,
 						Val:        "20",
 						typedValue: int64(20),
 					},
@@ -864,11 +864,11 @@ func Test_lessEqualEvaluator_evaluate(t *testing.T) {
 				operandType: IntType,
 				operands: []*Operand{
 					{
-						OperandAs: OperandAsField,
-						Val:       "count",
+						Type: FieldType,
+						Val:  "count",
 					},
 					{
-						OperandAs:  OperandAsConstant,
+						Type:       ConstantType,
 						Val:        "asdf",
 						typedValue: "asdf", // invalid
 					},
@@ -888,11 +888,11 @@ func Test_lessEqualEvaluator_evaluate(t *testing.T) {
 				operandType: FloatType,
 				operands: []*Operand{
 					{
-						OperandAs: OperandAsField,
-						Val:       "count",
+						Type: FieldType,
+						Val:  "count",
 					},
 					{
-						OperandAs:  OperandAsConstant,
+						Type:       ConstantType,
 						Val:        "20.1",
 						typedValue: float64(20.1),
 					},
@@ -912,11 +912,11 @@ func Test_lessEqualEvaluator_evaluate(t *testing.T) {
 				operandType: FloatType,
 				operands: []*Operand{
 					{
-						OperandAs: OperandAsField,
-						Val:       "count",
+						Type: FieldType,
+						Val:  "count",
 					},
 					{
-						OperandAs:  OperandAsConstant,
+						Type:       ConstantType,
 						Val:        "20.1",
 						typedValue: float64(20.1),
 					},
@@ -936,11 +936,11 @@ func Test_lessEqualEvaluator_evaluate(t *testing.T) {
 				operandType: FloatType,
 				operands: []*Operand{
 					{
-						OperandAs: OperandAsField,
-						Val:       "count",
+						Type: FieldType,
+						Val:  "count",
 					},
 					{
-						OperandAs:  OperandAsConstant,
+						Type:       ConstantType,
 						Val:        "asdf",
 						typedValue: "asdf", // invalid
 					},
@@ -960,11 +960,11 @@ func Test_lessEqualEvaluator_evaluate(t *testing.T) {
 				operandType: "panic",
 				operands: []*Operand{
 					{
-						OperandAs: OperandAsField,
-						Val:       "count",
+						Type: FieldType,
+						Val:  "count",
 					},
 					{
-						OperandAs:  OperandAsConstant,
+						Type:       ConstantType,
 						Val:        "20.1",
 						typedValue: 20.1,
 					},
@@ -1025,11 +1025,11 @@ func Test_equalEvaluator_evaluate(t *testing.T) {
 				operandType: IntType,
 				operands: []*Operand{
 					{
-						OperandAs: OperandAsField,
-						Val:       "count",
+						Type: FieldType,
+						Val:  "count",
 					},
 					{
-						OperandAs:  OperandAsConstant,
+						Type:       ConstantType,
 						Val:        "20",
 						typedValue: int64(20),
 					},
@@ -1049,11 +1049,11 @@ func Test_equalEvaluator_evaluate(t *testing.T) {
 				operandType: IntType,
 				operands: []*Operand{
 					{
-						OperandAs: OperandAsField,
-						Val:       "count",
+						Type: FieldType,
+						Val:  "count",
 					},
 					{
-						OperandAs:  OperandAsConstant,
+						Type:       ConstantType,
 						Val:        "20",
 						typedValue: int64(20),
 					},
@@ -1073,11 +1073,11 @@ func Test_equalEvaluator_evaluate(t *testing.T) {
 				operandType: IntType,
 				operands: []*Operand{
 					{
-						OperandAs: OperandAsField,
-						Val:       "count",
+						Type: FieldType,
+						Val:  "count",
 					},
 					{
-						OperandAs:  OperandAsConstant,
+						Type:       ConstantType,
 						Val:        "asdf",
 						typedValue: "asdf", // invalid
 					},
@@ -1097,11 +1097,11 @@ func Test_equalEvaluator_evaluate(t *testing.T) {
 				operandType: FloatType,
 				operands: []*Operand{
 					{
-						OperandAs: OperandAsField,
-						Val:       "count",
+						Type: FieldType,
+						Val:  "count",
 					},
 					{
-						OperandAs:  OperandAsConstant,
+						Type:       ConstantType,
 						Val:        "20.1",
 						typedValue: float64(20.1),
 					},
@@ -1121,11 +1121,11 @@ func Test_equalEvaluator_evaluate(t *testing.T) {
 				operandType: FloatType,
 				operands: []*Operand{
 					{
-						OperandAs: OperandAsField,
-						Val:       "count",
+						Type: FieldType,
+						Val:  "count",
 					},
 					{
-						OperandAs:  OperandAsConstant,
+						Type:       ConstantType,
 						Val:        "20.1",
 						typedValue: float64(20.1),
 					},
@@ -1145,11 +1145,11 @@ func Test_equalEvaluator_evaluate(t *testing.T) {
 				operandType: FloatType,
 				operands: []*Operand{
 					{
-						OperandAs: OperandAsField,
-						Val:       "count",
+						Type: FieldType,
+						Val:  "count",
 					},
 					{
-						OperandAs:  OperandAsConstant,
+						Type:       ConstantType,
 						Val:        "asdf",
 						typedValue: "asdf", // invalid
 					},
@@ -1169,11 +1169,11 @@ func Test_equalEvaluator_evaluate(t *testing.T) {
 				operandType: StringType,
 				operands: []*Operand{
 					{
-						OperandAs: OperandAsField,
-						Val:       "firstname",
+						Type: FieldType,
+						Val:  "firstname",
 					},
 					{
-						OperandAs:  OperandAsConstant,
+						Type:       ConstantType,
 						Val:        "ironman",
 						typedValue: "ironman",
 					},
@@ -1193,11 +1193,11 @@ func Test_equalEvaluator_evaluate(t *testing.T) {
 				operandType: StringType,
 				operands: []*Operand{
 					{
-						OperandAs: OperandAsField,
-						Val:       "firstname",
+						Type: FieldType,
+						Val:  "firstname",
 					},
 					{
-						OperandAs:  OperandAsConstant,
+						Type:       ConstantType,
 						Val:        "ironman",
 						typedValue: "ironman",
 					},
@@ -1217,11 +1217,11 @@ func Test_equalEvaluator_evaluate(t *testing.T) {
 				operandType: StringType,
 				operands: []*Operand{
 					{
-						OperandAs: OperandAsField,
-						Val:       "firstname",
+						Type: FieldType,
+						Val:  "firstname",
 					},
 					{
-						OperandAs:  OperandAsConstant,
+						Type:       ConstantType,
 						Val:        "1",
 						typedValue: 1, // invalid
 					},
@@ -1241,11 +1241,11 @@ func Test_equalEvaluator_evaluate(t *testing.T) {
 				operandType: BoolType,
 				operands: []*Operand{
 					{
-						OperandAs: OperandAsField,
-						Val:       "IsHoliday",
+						Type: FieldType,
+						Val:  "IsHoliday",
 					},
 					{
-						OperandAs:  OperandAsConstant,
+						Type:       ConstantType,
 						Val:        "true",
 						typedValue: true,
 					},
@@ -1265,11 +1265,11 @@ func Test_equalEvaluator_evaluate(t *testing.T) {
 				operandType: BoolType,
 				operands: []*Operand{
 					{
-						OperandAs: OperandAsField,
-						Val:       "IsHoliday",
+						Type: FieldType,
+						Val:  "IsHoliday",
 					},
 					{
-						OperandAs:  OperandAsConstant,
+						Type:       ConstantType,
 						Val:        "true",
 						typedValue: true,
 					},
@@ -1289,11 +1289,11 @@ func Test_equalEvaluator_evaluate(t *testing.T) {
 				operandType: BoolType,
 				operands: []*Operand{
 					{
-						OperandAs: OperandAsField,
-						Val:       "IsHoliday",
+						Type: FieldType,
+						Val:  "IsHoliday",
 					},
 					{
-						OperandAs:  OperandAsConstant,
+						Type:       ConstantType,
 						Val:        "1",
 						typedValue: 1, // invalid
 					},
@@ -1367,11 +1367,11 @@ func Test_notEqualEvaluator_evaluate(t *testing.T) {
 				operandType: IntType,
 				operands: []*Operand{
 					{
-						OperandAs: OperandAsField,
-						Val:       "count",
+						Type: FieldType,
+						Val:  "count",
 					},
 					{
-						OperandAs:  OperandAsConstant,
+						Type:       ConstantType,
 						Val:        "20",
 						typedValue: int64(20),
 					},
@@ -1391,11 +1391,11 @@ func Test_notEqualEvaluator_evaluate(t *testing.T) {
 				operandType: IntType,
 				operands: []*Operand{
 					{
-						OperandAs: OperandAsField,
-						Val:       "count",
+						Type: FieldType,
+						Val:  "count",
 					},
 					{
-						OperandAs:  OperandAsConstant,
+						Type:       ConstantType,
 						Val:        "20",
 						typedValue: int64(20),
 					},
@@ -1415,11 +1415,11 @@ func Test_notEqualEvaluator_evaluate(t *testing.T) {
 				operandType: IntType,
 				operands: []*Operand{
 					{
-						OperandAs: OperandAsField,
-						Val:       "count",
+						Type: FieldType,
+						Val:  "count",
 					},
 					{
-						OperandAs:  OperandAsConstant,
+						Type:       ConstantType,
 						Val:        "asdf",
 						typedValue: "asdf", // invalid
 					},
@@ -1439,11 +1439,11 @@ func Test_notEqualEvaluator_evaluate(t *testing.T) {
 				operandType: FloatType,
 				operands: []*Operand{
 					{
-						OperandAs: OperandAsField,
-						Val:       "count",
+						Type: FieldType,
+						Val:  "count",
 					},
 					{
-						OperandAs:  OperandAsConstant,
+						Type:       ConstantType,
 						Val:        "20.1",
 						typedValue: float64(20.1),
 					},
@@ -1463,11 +1463,11 @@ func Test_notEqualEvaluator_evaluate(t *testing.T) {
 				operandType: FloatType,
 				operands: []*Operand{
 					{
-						OperandAs: OperandAsField,
-						Val:       "count",
+						Type: FieldType,
+						Val:  "count",
 					},
 					{
-						OperandAs:  OperandAsConstant,
+						Type:       ConstantType,
 						Val:        "20.1",
 						typedValue: float64(20.1),
 					},
@@ -1487,11 +1487,11 @@ func Test_notEqualEvaluator_evaluate(t *testing.T) {
 				operandType: FloatType,
 				operands: []*Operand{
 					{
-						OperandAs: OperandAsField,
-						Val:       "count",
+						Type: FieldType,
+						Val:  "count",
 					},
 					{
-						OperandAs:  OperandAsConstant,
+						Type:       ConstantType,
 						Val:        "asdf",
 						typedValue: "asdf", // invalid
 					},
@@ -1511,11 +1511,11 @@ func Test_notEqualEvaluator_evaluate(t *testing.T) {
 				operandType: StringType,
 				operands: []*Operand{
 					{
-						OperandAs: OperandAsField,
-						Val:       "firstname",
+						Type: FieldType,
+						Val:  "firstname",
 					},
 					{
-						OperandAs:  OperandAsConstant,
+						Type:       ConstantType,
 						Val:        "ironman",
 						typedValue: "ironman",
 					},
@@ -1535,11 +1535,11 @@ func Test_notEqualEvaluator_evaluate(t *testing.T) {
 				operandType: StringType,
 				operands: []*Operand{
 					{
-						OperandAs: OperandAsField,
-						Val:       "firstname",
+						Type: FieldType,
+						Val:  "firstname",
 					},
 					{
-						OperandAs:  OperandAsConstant,
+						Type:       ConstantType,
 						Val:        "ironman",
 						typedValue: "ironman",
 					},
@@ -1559,11 +1559,11 @@ func Test_notEqualEvaluator_evaluate(t *testing.T) {
 				operandType: StringType,
 				operands: []*Operand{
 					{
-						OperandAs: OperandAsField,
-						Val:       "firstname",
+						Type: FieldType,
+						Val:  "firstname",
 					},
 					{
-						OperandAs:  OperandAsConstant,
+						Type:       ConstantType,
 						Val:        "1",
 						typedValue: 1, // invalid
 					},
@@ -1583,11 +1583,11 @@ func Test_notEqualEvaluator_evaluate(t *testing.T) {
 				operandType: BoolType,
 				operands: []*Operand{
 					{
-						OperandAs: OperandAsField,
-						Val:       "IsHoliday",
+						Type: FieldType,
+						Val:  "IsHoliday",
 					},
 					{
-						OperandAs:  OperandAsConstant,
+						Type:       ConstantType,
 						Val:        "true",
 						typedValue: true,
 					},
@@ -1607,11 +1607,11 @@ func Test_notEqualEvaluator_evaluate(t *testing.T) {
 				operandType: BoolType,
 				operands: []*Operand{
 					{
-						OperandAs: OperandAsField,
-						Val:       "IsHoliday",
+						Type: FieldType,
+						Val:  "IsHoliday",
 					},
 					{
-						OperandAs:  OperandAsConstant,
+						Type:       ConstantType,
 						Val:        "true",
 						typedValue: true,
 					},
@@ -1631,11 +1631,11 @@ func Test_notEqualEvaluator_evaluate(t *testing.T) {
 				operandType: BoolType,
 				operands: []*Operand{
 					{
-						OperandAs: OperandAsField,
-						Val:       "IsHoliday",
+						Type: FieldType,
+						Val:  "IsHoliday",
 					},
 					{
-						OperandAs:  OperandAsConstant,
+						Type:       ConstantType,
 						Val:        "1",
 						typedValue: 1, // invalid
 					},
@@ -1709,11 +1709,11 @@ func Test_containEvaluator_evaluate(t *testing.T) {
 				operandType: StringType,
 				operands: []*Operand{
 					{
-						OperandAs: OperandAsField,
-						Val:       "story",
+						Type: FieldType,
+						Val:  "story",
 					},
 					{
-						OperandAs:  OperandAsConstant,
+						Type:       ConstantType,
 						Val:        "dog",
 						typedValue: "dog",
 					},
@@ -1733,11 +1733,11 @@ func Test_containEvaluator_evaluate(t *testing.T) {
 				operandType: StringType,
 				operands: []*Operand{
 					{
-						OperandAs: OperandAsField,
-						Val:       "story",
+						Type: FieldType,
+						Val:  "story",
 					},
 					{
-						OperandAs:  OperandAsConstant,
+						Type:       ConstantType,
 						Val:        "dog",
 						typedValue: "dog",
 					},
@@ -1757,11 +1757,11 @@ func Test_containEvaluator_evaluate(t *testing.T) {
 				operandType: BoolType,
 				operands: []*Operand{
 					{
-						OperandAs: OperandAsField,
-						Val:       "story",
+						Type: FieldType,
+						Val:  "story",
 					},
 					{
-						OperandAs:  OperandAsConstant,
+						Type:       ConstantType,
 						Val:        "1",
 						typedValue: 1, // invalid
 					},

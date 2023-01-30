@@ -142,12 +142,12 @@ func generateIntConditions(fieldname string, min, max int64) map[string]*ruleeng
 		OperandType: ruleenginecore.IntType,
 		Operands: []*ruleenginecore.Operand{
 			{
-				OperandAs: ruleenginecore.OperandAsField,
-				Val:       fieldname,
+				Type: ruleenginecore.FieldType,
+				Val:  fieldname,
 			},
 			{
-				OperandAs: ruleenginecore.OperandAsConstant,
-				Val:       minStr,
+				Type: ruleenginecore.ConstantType,
+				Val:  minStr,
 			},
 		},
 	}
@@ -158,12 +158,12 @@ func generateIntConditions(fieldname string, min, max int64) map[string]*ruleeng
 		OperandType: ruleenginecore.IntType,
 		Operands: []*ruleenginecore.Operand{
 			{
-				OperandAs: ruleenginecore.OperandAsField,
-				Val:       fieldname,
+				Type: ruleenginecore.FieldType,
+				Val:  fieldname,
 			},
 			{
-				OperandAs: ruleenginecore.OperandAsConstant,
-				Val:       maxStr,
+				Type: ruleenginecore.ConstantType,
+				Val:  maxStr,
 			},
 		},
 	}
@@ -180,12 +180,12 @@ func generateFloatConditions(fieldname string, min, max float64) map[string]*rul
 		OperandType: ruleenginecore.FloatType,
 		Operands: []*ruleenginecore.Operand{
 			{
-				OperandAs: ruleenginecore.OperandAsField,
-				Val:       fieldname,
+				Type: ruleenginecore.FieldType,
+				Val:  fieldname,
 			},
 			{
-				OperandAs: ruleenginecore.OperandAsConstant,
-				Val:       minStr,
+				Type: ruleenginecore.ConstantType,
+				Val:  minStr,
 			},
 		},
 	}
@@ -196,12 +196,12 @@ func generateFloatConditions(fieldname string, min, max float64) map[string]*rul
 		OperandType: ruleenginecore.FloatType,
 		Operands: []*ruleenginecore.Operand{
 			{
-				OperandAs: ruleenginecore.OperandAsField,
-				Val:       fieldname,
+				Type: ruleenginecore.FieldType,
+				Val:  fieldname,
 			},
 			{
-				OperandAs: ruleenginecore.OperandAsConstant,
-				Val:       maxStr,
+				Type: ruleenginecore.ConstantType,
+				Val:  maxStr,
 			},
 		},
 	}
@@ -223,12 +223,12 @@ func generateStringConditions(fieldname string, existingCondition map[string]*ru
 			OperandType: ruleenginecore.StringType,
 			Operands: []*ruleenginecore.Operand{
 				{
-					OperandAs: ruleenginecore.OperandAsConstant,
-					Val:       "This should be big story or comma separated values or any kind of string which ends with apple",
+					Type: ruleenginecore.ConstantType,
+					Val:  "This should be big story or comma separated values or any kind of string which ends with apple",
 				},
 				{
-					OperandAs: ruleenginecore.OperandAsField,
-					Val:       fieldname,
+					Type: ruleenginecore.FieldType,
+					Val:  fieldname,
 				},
 			},
 		}
@@ -245,12 +245,12 @@ func generateStringConditions(fieldname string, existingCondition map[string]*ru
 			OperandType: ruleenginecore.StringType,
 			Operands: []*ruleenginecore.Operand{
 				{
-					OperandAs: ruleenginecore.OperandAsField,
-					Val:       fieldname,
+					Type: ruleenginecore.FieldType,
+					Val:  fieldname,
 				},
 				{
-					OperandAs: ruleenginecore.OperandAsConstant,
-					Val:       "apple",
+					Type: ruleenginecore.ConstantType,
+					Val:  "apple",
 				},
 			},
 		}
@@ -274,12 +274,12 @@ func generateBoolConditions(fieldname string, existingCondition map[string]*rule
 		OperandType: ruleenginecore.BoolType,
 		Operands: []*ruleenginecore.Operand{
 			{
-				OperandAs: ruleenginecore.OperandAsField,
-				Val:       fieldname,
+				Type: ruleenginecore.FieldType,
+				Val:  fieldname,
 			},
 			{
-				OperandAs: ruleenginecore.OperandAsConstant,
-				Val:       "true",
+				Type: ruleenginecore.ConstantType,
+				Val:  "true",
 			},
 		},
 	}

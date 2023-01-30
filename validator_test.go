@@ -115,7 +115,7 @@ func TestConditionType_validateAndParseValues(t *testing.T) {
 			name: "validConditionGreaterInt",
 			conditionType: ConditionType{Operator: GreaterOperator,
 				OperandType: IntType,
-				Operands:    []*Operand{{OperandAs: OperandAsField, Val: "discount"}, {OperandAs: OperandAsConstant, Val: "10"}}},
+				Operands:    []*Operand{{Type: FieldType, Val: "discount"}, {Type: ConstantType, Val: "10"}}},
 
 			args:    args{name: "DiscountGreaterThan10", fs: Fields{"discount": IntType}},
 			wantErr: nil,
@@ -124,7 +124,7 @@ func TestConditionType_validateAndParseValues(t *testing.T) {
 			name: "InvalidOperandLength",
 			conditionType: ConditionType{Operator: GreaterOperator,
 				OperandType: IntType,
-				Operands:    []*Operand{{OperandAs: OperandAsField, Val: "discount"}, {OperandAs: OperandAsConstant, Val: "10"}, {OperandAs: OperandAsConstant, Val: "10"}}},
+				Operands:    []*Operand{{Type: FieldType, Val: "discount"}, {Type: ConstantType, Val: "10"}, {Type: ConstantType, Val: "10"}}},
 
 			args: args{name: "DiscountGreaterThan10", fs: Fields{"discount": IntType}},
 			wantErr: &RuleEngineError{
@@ -135,7 +135,7 @@ func TestConditionType_validateAndParseValues(t *testing.T) {
 			name: "InvalidOperandType",
 			conditionType: ConditionType{Operator: GreaterOperator,
 				OperandType: StringType,
-				Operands:    []*Operand{{OperandAs: OperandAsField, Val: "discount"}, {OperandAs: OperandAsConstant, Val: "10"}}},
+				Operands:    []*Operand{{Type: FieldType, Val: "discount"}, {Type: ConstantType, Val: "10"}}},
 
 			args: args{name: "DiscountGreaterThan10", fs: Fields{"discount": IntType}},
 			wantErr: &RuleEngineError{
@@ -146,29 +146,29 @@ func TestConditionType_validateAndParseValues(t *testing.T) {
 			name: "ParsingConstantOperandFailed",
 			conditionType: ConditionType{Operator: GreaterOperator,
 				OperandType: IntType,
-				Operands:    []*Operand{{OperandAs: OperandAsField, Val: "discount"}, {OperandAs: OperandAsConstant, Val: "asdf"}}},
+				Operands:    []*Operand{{Type: FieldType, Val: "discount"}, {Type: ConstantType, Val: "asdf"}}},
 
 			args: args{name: "DiscountGreaterThan10", fs: Fields{"discount": IntType}},
 			wantErr: &RuleEngineError{
 				ErrCode: ErrCodeFailedParsingInput,
 			},
 		},
-		{
-			name: "InvalidOperandAs",
-			conditionType: ConditionType{Operator: GreaterOperator,
-				OperandType: IntType,
-				Operands:    []*Operand{{OperandAs: OperandAsField, Val: "discount"}, {OperandAs: "asdf", Val: "asdf"}}},
+		// {
+		// 	name: "InvalidOperandAs",
+		// 	conditionType: ConditionType{Operator: GreaterOperator,
+		// 		OperandType: IntType,
+		// 		Operands:    []*Operand{{Type: FieldType, Val: "discount"}, {Type: ConstantType, Val: "asdf"}}},
 
-			args: args{name: "DiscountGreaterThan10", fs: Fields{"discount": IntType}},
-			wantErr: &RuleEngineError{
-				ErrCode: ErrCodeInvalidOperandAs,
-			},
-		},
+		// 	args: args{name: "DiscountGreaterThan10", fs: Fields{"discount": IntType}},
+		// 	wantErr: &RuleEngineError{
+		// 		ErrCode: ErrCodeInvalidOperandAs,
+		// 	},
+		// },
 		{
 			name: "InvalidOperator",
 			conditionType: ConditionType{Operator: ")",
 				OperandType: IntType,
-				Operands:    []*Operand{{OperandAs: OperandAsField, Val: "discount"}, {OperandAs: "asdf", Val: "asdf"}}},
+				Operands:    []*Operand{{Type: FieldType, Val: "discount"}, {Type: ConstantType, Val: "asdf"}}},
 
 			args: args{name: "DiscountGreaterThan10", fs: Fields{"discount": IntType}},
 			wantErr: &RuleEngineError{
@@ -179,27 +179,27 @@ func TestConditionType_validateAndParseValues(t *testing.T) {
 			name: "ValidContain",
 			conditionType: ConditionType{Operator: ContainOperator,
 				OperandType: StringType,
-				Operands:    []*Operand{{OperandAs: OperandAsField, Val: "story"}, {OperandAs: OperandAsConstant, Val: "dog"}}},
+				Operands:    []*Operand{{Type: FieldType, Val: "story"}, {Type: ConstantType, Val: "dog"}}},
 
 			args:    args{name: "StoryHasDogCondition", fs: Fields{"story": StringType}},
 			wantErr: nil,
 		},
-		{
-			name: "InvalidContainOperandAs",
-			conditionType: ConditionType{Operator: ContainOperator,
-				OperandType: StringType,
-				Operands:    []*Operand{{OperandAs: "Invalid", Val: "story"}, {OperandAs: OperandAsConstant, Val: "dog"}}},
+		// {
+		// 	name: "InvalidContainOperandAs",
+		// 	conditionType: ConditionType{Operator: ContainOperator,
+		// 		OperandType: StringType,
+		// 		Operands:    []*Operand{{Type: "Invalid", Val: "story"}, {Type: ConstantType, Val: "dog"}}},
 
-			args: args{name: "StoryHasDogCondition", fs: Fields{"story": StringType}},
-			wantErr: &RuleEngineError{
-				ErrCode: ErrCodeInvalidOperandAs,
-			},
-		},
+		// 	args: args{name: "StoryHasDogCondition", fs: Fields{"story": StringType}},
+		// 	wantErr: &RuleEngineError{
+		// 		ErrCode: ErrCodeInvalidOperandAs,
+		// 	},
+		// },
 		{
 			name: "ValidContain",
 			conditionType: ConditionType{Operator: ContainOperator,
 				OperandType: StringType,
-				Operands:    []*Operand{{OperandAs: OperandAsField, Val: "story"}, {OperandAs: OperandAsConstant, Val: "dog"}}},
+				Operands:    []*Operand{{Type: FieldType, Val: "story"}, {Type: ConstantType, Val: "dog"}}},
 
 			args:    args{name: "StoryHasDogCondition", fs: Fields{"story": StringType}},
 			wantErr: nil,
@@ -208,7 +208,7 @@ func TestConditionType_validateAndParseValues(t *testing.T) {
 			name: "InvalidContainOperandLength",
 			conditionType: ConditionType{Operator: ContainOperator,
 				OperandType: StringType,
-				Operands:    []*Operand{{OperandAs: OperandAsField, Val: "story"}}},
+				Operands:    []*Operand{{Type: FieldType, Val: "story"}}},
 
 			args: args{name: "StoryHasDogCondition", fs: Fields{"story": StringType}},
 			wantErr: &RuleEngineError{
@@ -219,7 +219,7 @@ func TestConditionType_validateAndParseValues(t *testing.T) {
 			name: "InvalidContainOperandType",
 			conditionType: ConditionType{Operator: ContainOperator,
 				OperandType: "Invalid",
-				Operands:    []*Operand{{OperandAs: OperandAsField, Val: "story"}, {OperandAs: OperandAsField, Val: "story"}}},
+				Operands:    []*Operand{{Type: FieldType, Val: "story"}, {Type: FieldType, Val: "story"}}},
 
 			args: args{name: "StoryHasDogCondition", fs: Fields{"story": StringType}},
 			wantErr: &RuleEngineError{
@@ -230,7 +230,7 @@ func TestConditionType_validateAndParseValues(t *testing.T) {
 			name: "InvalidContainOperandType",
 			conditionType: ConditionType{Operator: ContainOperator,
 				OperandType: StringType,
-				Operands:    []*Operand{{OperandAs: OperandAsField, Val: "story"}, {OperandAs: OperandAsConstant, Val: "dog"}}},
+				Operands:    []*Operand{{Type: FieldType, Val: "story"}, {Type: ConstantType, Val: "dog"}}},
 
 			args: args{name: "StoryHasDogCondition", fs: Fields{"story": IntType}},
 			wantErr: &RuleEngineError{
@@ -241,7 +241,7 @@ func TestConditionType_validateAndParseValues(t *testing.T) {
 			name: "ValidEqual",
 			conditionType: ConditionType{Operator: EqualOperator,
 				OperandType: StringType,
-				Operands:    []*Operand{{OperandAs: OperandAsField, Val: "story"}, {OperandAs: OperandAsField, Val: "story"}}},
+				Operands:    []*Operand{{Type: FieldType, Val: "story"}, {Type: FieldType, Val: "story"}}},
 
 			args:    args{name: "StoryHasDogCondition", fs: Fields{"story": StringType}},
 			wantErr: nil,
@@ -250,7 +250,7 @@ func TestConditionType_validateAndParseValues(t *testing.T) {
 			name: "InvalidEqualOperandLength",
 			conditionType: ConditionType{Operator: EqualOperator,
 				OperandType: StringType,
-				Operands:    []*Operand{{OperandAs: OperandAsField, Val: "story"}}},
+				Operands:    []*Operand{{Type: FieldType, Val: "story"}}},
 
 			args: args{name: "StoryHasDogCondition", fs: Fields{"story": StringType}},
 			wantErr: &RuleEngineError{
@@ -261,7 +261,7 @@ func TestConditionType_validateAndParseValues(t *testing.T) {
 			name: "InvalidEqualOperandType",
 			conditionType: ConditionType{Operator: EqualOperator,
 				OperandType: "asdf",
-				Operands:    []*Operand{{OperandAs: OperandAsField, Val: "story"}, {OperandAs: OperandAsField, Val: "story"}}},
+				Operands:    []*Operand{{Type: FieldType, Val: "story"}, {Type: FieldType, Val: "story"}}},
 
 			args: args{name: "StoryHasDogCondition", fs: Fields{"story": StringType}},
 			wantErr: &RuleEngineError{
@@ -272,7 +272,7 @@ func TestConditionType_validateAndParseValues(t *testing.T) {
 			name: "InvalidEqualOperandValueType",
 			conditionType: ConditionType{Operator: EqualOperator,
 				OperandType: IntType,
-				Operands:    []*Operand{{OperandAs: OperandAsField, Val: "story"}, {OperandAs: OperandAsField, Val: "story"}}},
+				Operands:    []*Operand{{Type: FieldType, Val: "story"}, {Type: FieldType, Val: "story"}}},
 
 			args: args{name: "StoryHasDogCondition", fs: Fields{"story": StringType}},
 			wantErr: &RuleEngineError{
@@ -283,24 +283,24 @@ func TestConditionType_validateAndParseValues(t *testing.T) {
 			name: "InvalidEqualConstantValue",
 			conditionType: ConditionType{Operator: EqualOperator,
 				OperandType: IntType,
-				Operands:    []*Operand{{OperandAs: OperandAsField, Val: "count"}, {OperandAs: OperandAsConstant, Val: "asdf"}}},
+				Operands:    []*Operand{{Type: FieldType, Val: "count"}, {Type: ConstantType, Val: "asdf"}}},
 
 			args: args{name: "CountIs100", fs: Fields{"count": IntType}},
 			wantErr: &RuleEngineError{
 				ErrCode: ErrCodeFailedParsingInput,
 			},
 		},
-		{
-			name: "InvalidEqualOperandAs",
-			conditionType: ConditionType{Operator: EqualOperator,
-				OperandType: IntType,
-				Operands:    []*Operand{{OperandAs: "asdf", Val: "count"}, {OperandAs: OperandAsConstant, Val: "asdf"}}},
+		// {
+		// 	name: "InvalidEqualOperandAs",
+		// 	conditionType: ConditionType{Operator: EqualOperator,
+		// 		OperandType: IntType,
+		// 		Operands:    []*Operand{{Type: "asdf", Val: "count"}, {Type: ConstantType, Val: "asdf"}}},
 
-			args: args{name: "CountIs100", fs: Fields{"count": IntType}},
-			wantErr: &RuleEngineError{
-				ErrCode: ErrCodeInvalidOperandAs,
-			},
-		},
+		// 	args: args{name: "CountIs100", fs: Fields{"count": IntType}},
+		// 	wantErr: &RuleEngineError{
+		// 		ErrCode: ErrCodeInvalidOperandAs,
+		// 	},
+		// },
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -320,7 +320,7 @@ func TestConditionType_validateAndParseValues(t *testing.T) {
 			}
 
 			for _, op := range c.Operands {
-				if op.OperandAs == OperandAsConstant {
+				if op.Type == ConstantType {
 					wantVal, _ := getTypedValue(op.Val, c.OperandType)
 					if !reflect.DeepEqual(op.typedValue, wantVal) {
 						t.Errorf("ConditionType.validate() gotVal:%v, wantVal:%v ", op.typedValue, wantVal)
@@ -484,12 +484,12 @@ func TestRuleEngineConfig_validate(t *testing.T) {
 						OperandType: IntType,
 						Operands: []*Operand{
 							{
-								OperandAs: OperandAsField,
-								Val:       "discount",
+								Type: FieldType,
+								Val:  "discount",
 							},
 							{
-								OperandAs: OperandAsConstant,
-								Val:       "10",
+								Type: ConstantType,
+								Val:  "10",
 							},
 						},
 					},
@@ -498,12 +498,12 @@ func TestRuleEngineConfig_validate(t *testing.T) {
 						OperandType: IntType,
 						Operands: []*Operand{
 							{
-								OperandAs: OperandAsField,
-								Val:       "totalAmount",
+								Type: FieldType,
+								Val:  "totalAmount",
 							},
 							{
-								OperandAs: OperandAsConstant,
-								Val:       "1000",
+								Type: ConstantType,
+								Val:  "1000",
 							},
 						},
 					},

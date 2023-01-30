@@ -27,11 +27,11 @@
             "operandType": "bool",
             "operands": [
                 {
-                    "operandAs": "field",
+                    "type": "field",
                     "val": "a_bool"
                 },
                 {
-                    "operandAs": "constant",
+                    "type": "constant",
                     "val": "true"
                 }
             ]
@@ -41,11 +41,11 @@
             "operandType": "float",
             "operands": [
                 {
-                    "operandAs": "field",
+                    "type": "field",
                     "val": "a_float"
                 },
                 {
-                    "operandAs": "constant",
+                    "type": "constant",
                     "val": "1.0001358E+03"
                 }
             ]
@@ -55,11 +55,11 @@
             "operandType": "float",
             "operands": [
                 {
-                    "operandAs": "field",
+                    "type": "field",
                     "val": "a_float"
                 },
                 {
-                    "operandAs": "constant",
+                    "type": "constant",
                     "val": "0E+00"
                 }
             ]
@@ -69,11 +69,11 @@
             "operandType": "int",
             "operands": [
                 {
-                    "operandAs": "field",
+                    "type": "field",
                     "val": "a_int"
                 },
                 {
-                    "operandAs": "constant",
+                    "type": "constant",
                     "val": "1000"
                 }
             ]
@@ -83,11 +83,11 @@
             "operandType": "int",
             "operands": [
                 {
-                    "operandAs": "field",
+                    "type": "field",
                     "val": "a_int"
                 },
                 {
-                    "operandAs": "constant",
+                    "type": "constant",
                     "val": "0"
                 }
             ]
@@ -97,11 +97,11 @@
             "operandType": "string",
             "operands": [
                 {
-                    "operandAs": "field",
+                    "type": "field",
                     "val": "a_string"
                 },
                 {
-                    "operandAs": "constant",
+                    "type": "constant",
                     "val": "apple"
                 }
             ]
@@ -111,11 +111,11 @@
             "operandType": "bool",
             "operands": [
                 {
-                    "operandAs": "field",
+                    "type": "field",
                     "val": "b_bool"
                 },
                 {
-                    "operandAs": "constant",
+                    "type": "constant",
                     "val": "true"
                 }
             ]
@@ -125,11 +125,11 @@
             "operandType": "float",
             "operands": [
                 {
-                    "operandAs": "field",
+                    "type": "field",
                     "val": "b_float"
                 },
                 {
-                    "operandAs": "constant",
+                    "type": "constant",
                     "val": "1.0001358E+03"
                 }
             ]
@@ -139,11 +139,11 @@
             "operandType": "float",
             "operands": [
                 {
-                    "operandAs": "field",
+                    "type": "field",
                     "val": "b_float"
                 },
                 {
-                    "operandAs": "constant",
+                    "type": "constant",
                     "val": "0E+00"
                 }
             ]
@@ -153,11 +153,11 @@
             "operandType": "int",
             "operands": [
                 {
-                    "operandAs": "field",
+                    "type": "field",
                     "val": "b_int"
                 },
                 {
-                    "operandAs": "constant",
+                    "type": "constant",
                     "val": "1000"
                 }
             ]
@@ -167,11 +167,11 @@
             "operandType": "int",
             "operands": [
                 {
-                    "operandAs": "field",
+                    "type": "field",
                     "val": "b_int"
                 },
                 {
-                    "operandAs": "constant",
+                    "type": "constant",
                     "val": "0"
                 }
             ]
@@ -181,11 +181,11 @@
             "operandType": "string",
             "operands": [
                 {
-                    "operandAs": "constant",
+                    "type": "constant",
                     "val": "This should be big story or comma separated values or any kind of string which ends with apple"
                 },
                 {
-                    "operandAs": "field",
+                    "type": "field",
                     "val": "b_string"
                 }
             ]
@@ -195,11 +195,11 @@
             "operandType": "bool",
             "operands": [
                 {
-                    "operandAs": "field",
+                    "type": "field",
                     "val": "c_bool"
                 },
                 {
-                    "operandAs": "constant",
+                    "type": "constant",
                     "val": "true"
                 }
             ]
@@ -209,11 +209,11 @@
             "operandType": "float",
             "operands": [
                 {
-                    "operandAs": "field",
+                    "type": "field",
                     "val": "c_float"
                 },
                 {
-                    "operandAs": "constant",
+                    "type": "constant",
                     "val": "1.0001358E+03"
                 }
             ]
@@ -223,11 +223,11 @@
             "operandType": "float",
             "operands": [
                 {
-                    "operandAs": "field",
+                    "type": "field",
                     "val": "c_float"
                 },
                 {
-                    "operandAs": "constant",
+                    "type": "constant",
                     "val": "0E+00"
                 }
             ]
@@ -237,11 +237,11 @@
             "operandType": "int",
             "operands": [
                 {
-                    "operandAs": "field",
+                    "type": "field",
                     "val": "c_int"
                 },
                 {
-                    "operandAs": "constant",
+                    "type": "constant",
                     "val": "1000"
                 }
             ]
@@ -251,11 +251,11 @@
             "operandType": "int",
             "operands": [
                 {
-                    "operandAs": "field",
+                    "type": "field",
                     "val": "c_int"
                 },
                 {
-                    "operandAs": "constant",
+                    "type": "constant",
                     "val": "0"
                 }
             ]
@@ -265,11 +265,11 @@
             "operandType": "string",
             "operands": [
                 {
-                    "operandAs": "constant",
+                    "type": "constant",
                     "val": "This should be big story or comma separated values or any kind of string which ends with apple"
                 },
                 {
-                    "operandAs": "field",
+                    "type": "field",
                     "val": "c_string"
                 }
             ]
@@ -279,11 +279,11 @@
             "operandType": "bool",
             "operands": [
                 {
-                    "operandAs": "field",
+                    "type": "field",
                     "val": "d_bool"
                 },
                 {
-                    "operandAs": "constant",
+                    "type": "constant",
                     "val": "true"
                 }
             ]
@@ -293,11 +293,11 @@
             "operandType": "float",
             "operands": [
                 {
-                    "operandAs": "field",
+                    "type": "field",
                     "val": "d_float"
                 },
                 {
-                    "operandAs": "constant",
+                    "type": "constant",
                     "val": "1.0001358E+03"
                 }
             ]
@@ -307,11 +307,11 @@
             "operandType": "float",
             "operands": [
                 {
-                    "operandAs": "field",
+                    "type": "field",
                     "val": "d_float"
                 },
                 {
-                    "operandAs": "constant",
+                    "type": "constant",
                     "val": "0E+00"
                 }
             ]
@@ -321,11 +321,11 @@
             "operandType": "int",
             "operands": [
                 {
-                    "operandAs": "field",
+                    "type": "field",
                     "val": "d_int"
                 },
                 {
-                    "operandAs": "constant",
+                    "type": "constant",
                     "val": "1000"
                 }
             ]
@@ -335,11 +335,11 @@
             "operandType": "int",
             "operands": [
                 {
-                    "operandAs": "field",
+                    "type": "field",
                     "val": "d_int"
                 },
                 {
-                    "operandAs": "constant",
+                    "type": "constant",
                     "val": "0"
                 }
             ]
@@ -349,11 +349,11 @@
             "operandType": "string",
             "operands": [
                 {
-                    "operandAs": "constant",
+                    "type": "constant",
                     "val": "This should be big story or comma separated values or any kind of string which ends with apple"
                 },
                 {
-                    "operandAs": "field",
+                    "type": "field",
                     "val": "d_string"
                 }
             ]
@@ -363,11 +363,11 @@
             "operandType": "bool",
             "operands": [
                 {
-                    "operandAs": "field",
+                    "type": "field",
                     "val": "e_bool"
                 },
                 {
-                    "operandAs": "constant",
+                    "type": "constant",
                     "val": "true"
                 }
             ]
@@ -377,11 +377,11 @@
             "operandType": "float",
             "operands": [
                 {
-                    "operandAs": "field",
+                    "type": "field",
                     "val": "e_float"
                 },
                 {
-                    "operandAs": "constant",
+                    "type": "constant",
                     "val": "1.0001358E+03"
                 }
             ]
@@ -391,11 +391,11 @@
             "operandType": "float",
             "operands": [
                 {
-                    "operandAs": "field",
+                    "type": "field",
                     "val": "e_float"
                 },
                 {
-                    "operandAs": "constant",
+                    "type": "constant",
                     "val": "0E+00"
                 }
             ]
@@ -405,11 +405,11 @@
             "operandType": "int",
             "operands": [
                 {
-                    "operandAs": "field",
+                    "type": "field",
                     "val": "e_int"
                 },
                 {
-                    "operandAs": "constant",
+                    "type": "constant",
                     "val": "1000"
                 }
             ]
@@ -419,11 +419,11 @@
             "operandType": "int",
             "operands": [
                 {
-                    "operandAs": "field",
+                    "type": "field",
                     "val": "e_int"
                 },
                 {
-                    "operandAs": "constant",
+                    "type": "constant",
                     "val": "0"
                 }
             ]
@@ -433,11 +433,11 @@
             "operandType": "string",
             "operands": [
                 {
-                    "operandAs": "constant",
+                    "type": "constant",
                     "val": "This should be big story or comma separated values or any kind of string which ends with apple"
                 },
                 {
-                    "operandAs": "field",
+                    "type": "field",
                     "val": "e_string"
                 }
             ]
