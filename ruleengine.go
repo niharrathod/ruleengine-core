@@ -13,9 +13,6 @@ type rule struct {
 	result        map[string]any
 }
 
-// <key> : <value> is <fieldname> : <typedvalue>
-type typedValueMap map[string]any
-
 func (r *rule) evaluate(ctx context.Context, input typedValueMap) (bool, *RuleEngineError) {
 	out := make(chan bool)
 	ctxCancelled := false

@@ -4,7 +4,7 @@ import (
 	"fmt"
 )
 
-// Supported value types
+// field value types
 const (
 	//	'int'  is 64 bit signed integer
 	IntType = "int"
@@ -19,7 +19,7 @@ const (
 	StringType = "string"
 )
 
-// Supported OperandAs
+// OperandAs either field or constant
 const (
 	// operand is considered as field and value is determined from the Input
 	OperandAsField = "field"
@@ -28,7 +28,7 @@ const (
 	OperandAsConstant = "constant"
 )
 
-// Supported operators to define custom ConditionType
+// allowed operators to define custom ConditionType
 const (
 	GreaterOperator      = ">"
 	GreaterEqualOperator = ">="
@@ -39,14 +39,14 @@ const (
 	ContainOperator      = "contain"
 )
 
-// Supported logical operators to defining condition for rule
+// logical operators to defining condition for rule
 const (
 	NegationOperator = "not"
 	AndOperator      = "and"
 	OrOperator       = "or"
 )
 
-// defines an input for rule evaluation as map of fieldname as key and string representation of value as (map)value
+// 'Input' defines an input for rule evaluation as map of fieldname as key and string representation of value as (map)value
 type Input map[string]string
 
 // defines an output for evaluation result
@@ -61,7 +61,7 @@ type Output struct {
 	Result map[string]any `json:"result"`
 }
 
-// defines a mandatory fields for RuleEngine Input,  as map of fieldname as key and fieldtype as value
+// 'fields' defines a mandatory input for RuleEngine evaluation, internally it represents as map of fieldname(string) as key and fieldValueType as value
 //
 // As part engine evaluation, for field value is picked from the input with fieldname.
 //
@@ -124,16 +124,16 @@ type Condition struct {
 	SubConditions []*Condition `json:"subConditions"`
 }
 
-// defines a rule for RuleEngine.
+// defines a rule as model for RuleEngine.
 type Rule struct {
 	Priority      int            `json:"priority"`
 	RootCondition *Condition     `json:"condition"`
 	Result        map[string]any `json:"result"`
 }
 
-// Configuration for a RuleEngine. defines mandatory input fields, custom conditions and rule
+// 'RuleEngineConfig' is a configuration for a RuleEngine. defines mandatory input fields, custom conditions and rule
 type RuleEngineConfig struct {
-	// defines fields, mandatory values for input as map having fieldname as key, fieldtype as value
+	// 'Fields' defines mandatory as input for rule engine evaluation
 	Fields Fields `json:"fields"`
 
 	// defines custom ConditionTypes as map having conditionTypeName as key, ConditionType as value
@@ -142,6 +142,9 @@ type RuleEngineConfig struct {
 	// defines Rules for ruleengine, as map having rulename as key, rule as value
 	Rules map[string]*Rule `json:"rules"`
 }
+
+// <key> : <value> is <fieldname> : <typedvalue>
+type typedValueMap map[string]any
 
 type RuleEngineError struct {
 	ComponentName string
@@ -187,5 +190,5 @@ var errCodeToMessage = map[uint]string{
 	ErrCodeFailedParsingInput:        "Could not parse input",
 	ErrCodeRuleNotFound:              "Rule not found",
 	ErrCodeInvalidEvaluateOperations: "Invalid evaluate options value n",
-	ErrCodeContextCancelled:          "context is cancelled",
+	ErrCodeContextCancelled:          "Context is cancelled",
 }
