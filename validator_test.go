@@ -293,7 +293,7 @@ func Test_operandValidator(t *testing.T) {
 				},
 			},
 			validatorFunc: operandValidator(),
-			wantErr:       newError(ErrCodeInvalidOperand),
+			wantErr:       newError(ErrCodeInvalidOperandType),
 		},
 		{
 			name: "invalid_wrongOperandValueType",
@@ -311,7 +311,7 @@ func Test_operandValidator(t *testing.T) {
 				},
 			},
 			validatorFunc: operandValidator(),
-			wantErr:       newError(ErrCodeInvalidOperand),
+			wantErr:       newError(ErrCodeInvalidValueType),
 		},
 		{
 			name: "invalid_FieldNotFound",

@@ -94,14 +94,6 @@ func (op *Operand) isField() bool {
 	return op.Type == Field
 }
 
-func (op *Operand) isConstant() bool {
-	return op.Type == Constant
-}
-
-func (op *Operand) valid() bool {
-	return op.ValueType.isValid() && op.Type.isValid()
-}
-
 func (op *Operand) getValue(values parsedInput) any {
 	switch op.Type {
 	case Field:

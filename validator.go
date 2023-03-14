@@ -86,8 +86,12 @@ var operandValidator = func() conditionTypeValidatorFunc {
 
 func validateAndParseOperand(operand *Operand, fs Fields) *RuleEngineError {
 
-	if !operand.valid() {
-		return newError(ErrCodeInvalidOperand, "Invalid ValueType or OperandType")
+	if !operand.Type.isValid() {
+		return newError(ErrCodeInvalidOperandType, fmt.Sprintf("Invalid OperandType. Supported operand types %v", operandTypeList))
+	}
+
+	if !operand.ValueType.isValid() {
+		return newError(ErrCodeInvalidValueType, fmt.Sprintf("Invalid ValueType. Supported value types %v", valueTypeList))
 	}
 
 	// Field operandType
