@@ -4,7 +4,6 @@ import (
 	"strings"
 )
 
-
 const (
 	firstOperand  = 0
 	secondOperand = 1
@@ -21,7 +20,6 @@ func greater[T int64 | float64](input map[string]any, operands []*Operand) bool 
 	if !ok {
 		panic(valuePrepFail)
 	}
-
 	return first > second
 }
 

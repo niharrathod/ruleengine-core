@@ -6,60 +6,60 @@ import (
 	"strings"
 )
 
-// 'OperandType' is either field or constant
+// 'OperandType' defines type of operand either 'Field' or 'Constant'
 type OperandType uint8
 
 const (
-	// 'FieldType' operand is considered as field and value is determined from the Input
-	FieldType OperandType = iota + 1
+	unknownOperandType OperandType = iota
 
-	// 'ConstantType' operand is considered as constant and value is determined from Operand.Val
-	ConstantType
+	// 'Field' is OperandType where operand value is derived from the Input using name as Operand.Val
+	Field
+
+	// 'Constant' is OperandType where operand value is considered as Operand.Val
+	Constant
 )
 
 var (
-	OperandType_Name = map[uint8]string{
-		1: "FieldType",
-		2: "ConstantType",
+	operandType_Name = map[OperandType]string{
+		1: "Field",
+		2: "Constant",
 	}
-	OperandType_Value = map[string]uint8{
-		"FieldType":    1,
-		"fieldtype":    1,
-		"field":        1,
-		"ConstantType": 2,
-		"constanttype": 2,
-		"constant":     2,
+	operandType_Value = map[string]OperandType{
+		"field":    1,
+		"Field":    1,
+		"constant": 2,
+		"Constant": 2,
 	}
 )
 
-// IsValid check for valid operandType starting from 1("Field"),2("Constant")
-func IsValid(operandType OperandType) bool {
-	_, ok := OperandType_Name[uint8(operandType)]
+// 'isValid' check for valid operandType starting from 1("Field"),2("Constant")
+func (operandType OperandType) isValid() bool {
+	_, ok := operandType_Name[operandType]
 	return ok
 }
 
 func (operandType OperandType) String() string {
-	val, ok := OperandType_Name[uint8(operandType)]
+	val, ok := operandType_Name[operandType]
 	if !ok {
-		panic(fmt.Sprint("Could not identify OperandType with value", uint8(operandType)))
+		return fmt.Sprintf("OperandType(%v)", uint8(operandType))
 	}
 	return val
 }
 
-func ParseOperandType(s string) (OperandType, error) {
+func parseOperandType(s string) (OperandType, error) {
 	s = strings.TrimSpace(strings.ToLower(s))
-	value, ok := OperandType_Value[s]
+	value, ok := operandType_Value[s]
 	if !ok {
-		return OperandType(0), fmt.Errorf("%v is not the value OperandType", s)
+		return unknownOperandType, fmt.Errorf("invalid OperandType(%v)", s)
 	}
-	return OperandType(value), nil
+	return value, nil
 }
 
 func (operandType OperandType) MarshalJSON() ([]byte, error) {
-	if IsValid(operandType) {
+	if operandType.isValid() {
 		return json.Marshal(operandType.String())
 	}
-	return nil, fmt.Errorf("%v is not valid OperandType", operandType)
+	return nil, fmt.Errorf("invalid OperandType(%v)", uint8(operandType))
 }
 
 func (operandType *OperandType) UnmarshalJSON(data []byte) error {
@@ -68,11 +68,24 @@ func (operandType *OperandType) UnmarshalJSON(data []byte) error {
 		return err
 	}
 
-	result, err := ParseOperandType(val)
+	result, err := parseOperandType(val)
 	if err != nil {
 		return err
 	}
 
 	*operandType = result
 	return nil
+}
+
+// comma separated operandType list
+var operandTypeList string
+
+func init() {
+	validOperandType := []string{}
+
+	for _, value := range operandType_Name {
+		validOperandType = append(validOperandType, value)
+	}
+
+	operandTypeList = strings.Join(validOperandType[:], ", ")
 }

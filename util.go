@@ -1,34 +1,35 @@
 package ruleenginecore
 
 import (
-	"errors"
+	"fmt"
 	"strconv"
 )
 
-func getTypedValue(value, toType string) (any, error) {
+func parseValue(value string, toType ValueType) (any, *RuleEngineError) {
 	switch toType {
-	case BoolType:
+	case Boolean:
 		if val, err := strconv.ParseBool(value); err != nil {
-			return nil, errors.New("Could not convert " + value + " to bool value")
+			return nil, newError(ErrCodeParsingFailed, fmt.Sprintf("ParingError: %v", err))
 		} else {
 			return val, nil
 		}
-	case IntType:
+	case Integer:
 		if val, err := strconv.ParseInt(value, 10, 64); err != nil {
-			return nil, errors.New("Could not convert " + value + " to int value")
+			return nil, newError(ErrCodeParsingFailed, fmt.Sprintf("ParingError: %v", err))
 		} else {
 			return val, nil
 		}
-	case FloatType:
+	case Float:
 		if val, err := strconv.ParseFloat(value, 64); err != nil {
-			return nil, errors.New("Could not convert " + value + " to float value")
+			return nil, newError(ErrCodeParsingFailed, fmt.Sprintf("ParingError: %v", err))
 		} else {
 			return val, nil
 		}
-	case StringType:
+	case String:
 		return value, nil
 
 	default:
-		return nil, errors.New("Invalid value type:" + toType)
+		// no-op
+		return nil, newError(ErrCodeInvalidValueType)
 	}
 }
