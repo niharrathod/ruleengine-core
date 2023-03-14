@@ -35,8 +35,8 @@ func main() {
 	writeJsonToFile(generateInvalidInput(fields, fieldIntValueMap, fieldFloatValueMap), "InvalidInput.json")
 }
 
-func generateRules(ruleCount int, fields ruleenginecore.Fields) (map[string]*ruleenginecore.Rule, map[string]*ruleenginecore.ConditionType) {
-	ruleMap := map[string]*ruleenginecore.Rule{}
+func generateRules(ruleCount int, fields ruleenginecore.Fields) (map[string]*ruleenginecore.RuleConfig, map[string]*ruleenginecore.ConditionType) {
+	ruleMap := map[string]*ruleenginecore.RuleConfig{}
 	conditionTypeMap := map[string]*ruleenginecore.ConditionType{}
 
 	for i := 0; i < ruleCount; i++ {
@@ -45,7 +45,7 @@ func generateRules(ruleCount int, fields ruleenginecore.Fields) (map[string]*rul
 		for fieldname, fieldtype := range fields {
 
 			switch fieldtype {
-			case ruleenginecore.IntType:
+			case ruleenginecore.Integer:
 				min := fieldIntValueMap[fieldname]
 				max := min + intStep
 
@@ -57,14 +57,14 @@ func generateRules(ruleCount int, fields ruleenginecore.Fields) (map[string]*rul
 					conditionTypeMap[condName] = cond
 					// adding to currentRuleSubConditions
 					ruleSubCond := ruleenginecore.Condition{
-						ConditionType: condName,
+						Type: condName,
 					}
 					subConditions = append(subConditions, &ruleSubCond)
 
 				}
 				fieldIntValueMap[fieldname] = max
 
-			case ruleenginecore.FloatType:
+			case ruleenginecore.Float:
 				min := fieldFloatValueMap[fieldname]
 				max := min + floatStep
 
@@ -76,13 +76,13 @@ func generateRules(ruleCount int, fields ruleenginecore.Fields) (map[string]*rul
 					conditionTypeMap[condName] = cond
 					// adding to currentRuleSubConditions
 					ruleSubCond := ruleenginecore.Condition{
-						ConditionType: condName,
+						Type: condName,
 					}
 					subConditions = append(subConditions, &ruleSubCond)
 
 				}
 				fieldFloatValueMap[fieldname] = max
-			case ruleenginecore.StringType:
+			case ruleenginecore.String:
 				condMap := generateStringConditions(fieldname, conditionTypeMap)
 
 				for condName, cond := range condMap {
@@ -90,13 +90,13 @@ func generateRules(ruleCount int, fields ruleenginecore.Fields) (map[string]*rul
 					conditionTypeMap[condName] = cond
 					// adding to currentRuleSubConditions
 					ruleSubCond := ruleenginecore.Condition{
-						ConditionType: condName,
+						Type: condName,
 					}
 					subConditions = append(subConditions, &ruleSubCond)
 
 				}
 
-			case ruleenginecore.BoolType:
+			case ruleenginecore.Boolean:
 				condMap := generateBoolConditions(fieldname, conditionTypeMap)
 
 				for condName, cond := range condMap {
@@ -104,7 +104,7 @@ func generateRules(ruleCount int, fields ruleenginecore.Fields) (map[string]*rul
 					conditionTypeMap[condName] = cond
 					// adding to currentRuleSubConditions
 					ruleSubCond := ruleenginecore.Condition{
-						ConditionType: condName,
+						Type: condName,
 					}
 					subConditions = append(subConditions, &ruleSubCond)
 
@@ -114,11 +114,11 @@ func generateRules(ruleCount int, fields ruleenginecore.Fields) (map[string]*rul
 
 		rulename := "rule_" + strconv.Itoa(i)
 		rootCondition := ruleenginecore.Condition{
-			ConditionType: ruleenginecore.AndOperator,
+			Type:          ruleenginecore.AndCondition,
 			SubConditions: subConditions,
 		}
 
-		rule := ruleenginecore.Rule{
+		rule := ruleenginecore.RuleConfig{
 			Priority:      i,
 			RootCondition: &rootCondition,
 			Result: map[string]any{
@@ -138,32 +138,34 @@ func generateIntConditions(fieldname string, min, max int64) map[string]*ruleeng
 	maxStr := strconv.FormatInt(max, 10)
 	gteConditionName := fieldname + "_" + ruleenginecore.GreaterEqualOperator + "_" + minStr
 	result[gteConditionName] = &ruleenginecore.ConditionType{
-		Operator:    ruleenginecore.GreaterEqualOperator,
-		OperandType: ruleenginecore.IntType,
+		Operator: ruleenginecore.GreaterEqualOperator,
 		Operands: []*ruleenginecore.Operand{
 			{
-				Type: ruleenginecore.FieldType,
-				Val:  fieldname,
+				ValueType: ruleenginecore.Integer,
+				Type:      ruleenginecore.Field,
+				Val:       fieldname,
 			},
 			{
-				Type: ruleenginecore.ConstantType,
-				Val:  minStr,
+				ValueType: ruleenginecore.Integer,
+				Type:      ruleenginecore.Constant,
+				Val:       minStr,
 			},
 		},
 	}
 
 	lteConditionName := fieldname + "_" + ruleenginecore.LessEqualOperator + "_" + maxStr
 	result[lteConditionName] = &ruleenginecore.ConditionType{
-		Operator:    ruleenginecore.LessEqualOperator,
-		OperandType: ruleenginecore.IntType,
+		Operator: ruleenginecore.LessEqualOperator,
 		Operands: []*ruleenginecore.Operand{
 			{
-				Type: ruleenginecore.FieldType,
-				Val:  fieldname,
+				ValueType: ruleenginecore.Integer,
+				Type:      ruleenginecore.Field,
+				Val:       fieldname,
 			},
 			{
-				Type: ruleenginecore.ConstantType,
-				Val:  maxStr,
+				ValueType: ruleenginecore.Integer,
+				Type:      ruleenginecore.Constant,
+				Val:       maxStr,
 			},
 		},
 	}
@@ -176,32 +178,34 @@ func generateFloatConditions(fieldname string, min, max float64) map[string]*rul
 	maxStr := strconv.FormatFloat(max, 'E', -1, 64)
 	gteConditionName := fieldname + "_" + ruleenginecore.GreaterEqualOperator + "_" + minStr
 	result[gteConditionName] = &ruleenginecore.ConditionType{
-		Operator:    ruleenginecore.GreaterEqualOperator,
-		OperandType: ruleenginecore.FloatType,
+		Operator: ruleenginecore.GreaterEqualOperator,
 		Operands: []*ruleenginecore.Operand{
 			{
-				Type: ruleenginecore.FieldType,
-				Val:  fieldname,
+				ValueType: ruleenginecore.Float,
+				Type:      ruleenginecore.Field,
+				Val:       fieldname,
 			},
 			{
-				Type: ruleenginecore.ConstantType,
-				Val:  minStr,
+				ValueType: ruleenginecore.Float,
+				Type:      ruleenginecore.Constant,
+				Val:       minStr,
 			},
 		},
 	}
 
 	lteConditionName := fieldname + "_" + ruleenginecore.LessEqualOperator + "_" + maxStr
 	result[lteConditionName] = &ruleenginecore.ConditionType{
-		Operator:    ruleenginecore.LessEqualOperator,
-		OperandType: ruleenginecore.FloatType,
+		Operator: ruleenginecore.LessEqualOperator,
 		Operands: []*ruleenginecore.Operand{
 			{
-				Type: ruleenginecore.FieldType,
-				Val:  fieldname,
+				ValueType: ruleenginecore.Float,
+				Type:      ruleenginecore.Field,
+				Val:       fieldname,
 			},
 			{
-				Type: ruleenginecore.ConstantType,
-				Val:  maxStr,
+				ValueType: ruleenginecore.Float,
+				Type:      ruleenginecore.Constant,
+				Val:       maxStr,
 			},
 		},
 	}
@@ -219,16 +223,17 @@ func generateStringConditions(fieldname string, existingCondition map[string]*ru
 		}
 
 		result[containConditionName] = &ruleenginecore.ConditionType{
-			Operator:    ruleenginecore.ContainOperator,
-			OperandType: ruleenginecore.StringType,
+			Operator: ruleenginecore.ContainOperator,
 			Operands: []*ruleenginecore.Operand{
 				{
-					Type: ruleenginecore.ConstantType,
-					Val:  "This should be big story or comma separated values or any kind of string which ends with apple",
+					ValueType: ruleenginecore.String,
+					Type:      ruleenginecore.Constant,
+					Val:       "This should be big story or comma separated values or any kind of string which ends with apple",
 				},
 				{
-					Type: ruleenginecore.FieldType,
-					Val:  fieldname,
+					ValueType: ruleenginecore.String,
+					Type:      ruleenginecore.Field,
+					Val:       fieldname,
 				},
 			},
 		}
@@ -241,16 +246,17 @@ func generateStringConditions(fieldname string, existingCondition map[string]*ru
 		}
 
 		result[containConditionName] = &ruleenginecore.ConditionType{
-			Operator:    ruleenginecore.EqualOperator,
-			OperandType: ruleenginecore.StringType,
+			Operator: ruleenginecore.EqualOperator,
 			Operands: []*ruleenginecore.Operand{
 				{
-					Type: ruleenginecore.FieldType,
-					Val:  fieldname,
+					ValueType: ruleenginecore.String,
+					Type:      ruleenginecore.Field,
+					Val:       fieldname,
 				},
 				{
-					Type: ruleenginecore.ConstantType,
-					Val:  "apple",
+					ValueType: ruleenginecore.String,
+					Type:      ruleenginecore.Constant,
+					Val:       "apple",
 				},
 			},
 		}
@@ -270,16 +276,17 @@ func generateBoolConditions(fieldname string, existingCondition map[string]*rule
 	}
 
 	result[containConditionName] = &ruleenginecore.ConditionType{
-		Operator:    ruleenginecore.EqualOperator,
-		OperandType: ruleenginecore.BoolType,
+		Operator: ruleenginecore.EqualOperator,
 		Operands: []*ruleenginecore.Operand{
 			{
-				Type: ruleenginecore.FieldType,
-				Val:  fieldname,
+				ValueType: ruleenginecore.Boolean,
+				Type:      ruleenginecore.Field,
+				Val:       fieldname,
 			},
 			{
-				Type: ruleenginecore.ConstantType,
-				Val:  "true",
+				ValueType: ruleenginecore.Boolean,
+				Type:      ruleenginecore.Constant,
+				Val:       "true",
 			},
 		},
 	}
@@ -291,13 +298,13 @@ func generateValidInput(fields ruleenginecore.Fields, fieldIntValMap map[string]
 	result := ruleenginecore.Input{}
 	for name, typed := range fields {
 		switch typed {
-		case ruleenginecore.IntType:
+		case ruleenginecore.Integer:
 			result[name] = strconv.FormatInt(fieldIntValMap[name]-intStep, 10)
-		case ruleenginecore.FloatType:
+		case ruleenginecore.Float:
 			result[name] = strconv.FormatFloat(fieldFloatValMap[name]-floatStep, 'E', -1, 64)
-		case ruleenginecore.StringType:
+		case ruleenginecore.String:
 			result[name] = "apple"
-		case ruleenginecore.BoolType:
+		case ruleenginecore.Boolean:
 			result[name] = "true"
 		}
 	}
@@ -308,13 +315,13 @@ func generateInvalidInput(fields ruleenginecore.Fields, fieldIntValMap map[strin
 	result := ruleenginecore.Input{}
 	for name, typed := range fields {
 		switch typed {
-		case ruleenginecore.IntType:
+		case ruleenginecore.Integer:
 			result[name] = strconv.FormatInt(fieldIntValMap[name]-intStep, 10)
-		case ruleenginecore.FloatType:
+		case ruleenginecore.Float:
 			result[name] = strconv.FormatFloat(fieldFloatValMap[name]-floatStep, 'E', -1, 64)
-		case ruleenginecore.StringType:
+		case ruleenginecore.String:
 			result[name] = "apple1"
-		case ruleenginecore.BoolType:
+		case ruleenginecore.Boolean:
 			result[name] = "false"
 		}
 	}
@@ -343,32 +350,32 @@ func fieldGenerate(intCount, floatCount, stringCount, boolCount int) ruleenginec
 	prefix := 'a'
 
 	for i := 0; i < intCount; i++ {
-		name := string(prefix) + "_" + ruleenginecore.IntType
-		fields[name] = ruleenginecore.IntType
+		name := string(prefix) + "_" + ruleenginecore.Integer.String()
+		fields[name] = ruleenginecore.Integer
 		prefix++
 	}
 
 	// generate float field
 	prefix = 'a'
 	for i := 0; i < floatCount; i++ {
-		name := string(prefix) + "_" + ruleenginecore.FloatType
-		fields[name] = ruleenginecore.FloatType
+		name := string(prefix) + "_" + ruleenginecore.Float.String()
+		fields[name] = ruleenginecore.Float
 		prefix++
 	}
 
 	// generate string field
 	prefix = 'a'
 	for i := 0; i < stringCount; i++ {
-		name := string(prefix) + "_" + ruleenginecore.StringType
-		fields[name] = ruleenginecore.StringType
+		name := string(prefix) + "_" + ruleenginecore.String.String()
+		fields[name] = ruleenginecore.String
 		prefix++
 	}
 
 	// generate bool field
 	prefix = 'a'
 	for i := 0; i < boolCount; i++ {
-		name := string(prefix) + "_" + ruleenginecore.BoolType
-		fields[name] = ruleenginecore.BoolType
+		name := string(prefix) + "_" + ruleenginecore.Boolean.String()
+		fields[name] = ruleenginecore.Boolean
 		prefix++
 	}
 

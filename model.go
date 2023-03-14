@@ -2,25 +2,10 @@ package ruleenginecore
 
 import (
 	"fmt"
+	"strings"
 )
 
-// field value types
-const (
-	//	'int'  is 64 bit signed integer
-	IntType = "int"
-
-	// 'float' is 64 bit signed float
-	FloatType = "float"
-
-	// 'bool' is boolean true or false
-	BoolType = "bool"
-
-	// 'string' is UTF-8 based string
-	StringType = "string"
-)
-
-
-// allowed operators to define custom ConditionType
+// Supported operators to define custom ConditionType
 const (
 	GreaterOperator      = ">"
 	GreaterEqualOperator = ">="
@@ -31,11 +16,11 @@ const (
 	ContainOperator      = "contain"
 )
 
-// logical operators to defining condition for rule
+// Supported default ConditionTypes
 const (
-	NegationOperator = "not"
-	AndOperator      = "and"
-	OrOperator       = "or"
+	NegationCondition = "not"
+	AndCondition      = "and"
+	OrCondition       = "or"
 )
 
 // 'Input' defines an input for rule evaluation as map of fieldname as key and string representation of value as (map)value
@@ -53,75 +38,112 @@ type Output struct {
 	Result map[string]any `json:"result"`
 }
 
-// 'fields' defines a mandatory input for RuleEngine evaluation, internally it represents as map of fieldname(string) as key and fieldValueType as value
+func newOutput(ruleName string, priority int, result map[string]any) *Output {
+	return &Output{
+		Rulename: ruleName,
+		Priority: priority,
+		Result:   result,
+	}
+}
+
+// 'fields' defines a mandatory input for RuleEngine evaluation, internally it represents as map of fieldname(string) as key and ValueType as value
 //
 // As part engine evaluation, for field value is picked from the input with fieldname.
-//
-//	valid fieldtypes are 'int', 'float', 'bool', 'string'
-//	'int'  is 64 bit signed integer
-//	'float' is 64 bit signed float
-//	'bool' is boolean true or false
-//	'string' is UTF-8 based string
-type Fields map[string]string
+type Fields map[string]ValueType
 
-// define an Operand for custom ConditionType
+func (fs Fields) exist(fieldName string, expectedFieldType ValueType) bool {
+	actualFieldType, ok := fs[fieldName]
+	if !ok {
+		return false
+	}
+
+	if actualFieldType != expectedFieldType {
+		return false
+	}
+
+	return true
+}
+
+// 'Operand' defines an operand for custom ConditionType
 //
 // as part of evaluation process operand value is determined as following:
 //
-//	if operand.OperandAs is 'field'
+//	if operand.OperandType is 'field'
 //		->operand.Val is fieldname, Operand value is determined from the input having fieldname as <operand.Val>
-//	if operand.OperandAs is 'constant'
+//	if operand.OperandType is 'constant'
 //		->operand.Val is considered as operand value in a string form.
 type Operand struct {
-	// define operand as field or constant. valid values are 'field' and 'constant'
+	// 'ValueType' defined as type of operand value
+	ValueType ValueType `json:"valuetype"`
+
+	// 'Type' define type of an operand as either field or constant
 	Type OperandType `json:"type"`
 
-	// value of an operand
+	// 'Val' is value of an operand
 	//
-	// for operandAs 'field'
-	//		-> Val is considered as 'fieldname', while evaluation, value is picked from input
-	// for operandAs 'constant'
-	//		-> Val is considered as value of operand for evaluation.
+	// for OperandType as 'field'
+	//		-> Val is considered as 'fieldname', while evaluation, value is picked from input as operand for evaluation
+	// for OperandType as 'constant'
+	//		-> Val is considered as value and picked as operand for evaluation.
 
-	Val        string `json:"val"`
+	Val        string `json:"value"`
 	typedValue any    `json:"-"`
 }
 
-func (op *Operand) getValue(input typedValueMap) any {
+func (op *Operand) isField() bool {
+	return op.Type == Field
+}
+
+func (op *Operand) isConstant() bool {
+	return op.Type == Constant
+}
+
+func (op *Operand) valid() bool {
+	return op.ValueType.isValid() && op.Type.isValid()
+}
+
+func (op *Operand) getValue(values parsedInput) any {
 	switch op.Type {
-	case FieldType:
-		return input[op.Val]
-	case ConstantType:
+	case Field:
+		return values[op.Val]
+	case Constant:
 		return op.typedValue
 	}
-	// never executed
-	panic(fmt.Sprintf("Invalid OperandType %v", op.Type))
+	// no-op
+	panic(fmt.Sprintf("Invalid OperandType %v", op.ValueType))
 }
 
-// defines a custom condition type
+// 'ConditionType' defines a custom condition type, which is be used while defining a rule
 // Valid Operators are '>','>=','<','<=','==', '!=', 'contain'
 //
-//	'>','>=','<','<=' operators supports 'int', 'float' operandType
-//	'>','>=','<','<=','==', '!=' operator support 'int','float','bool','string' operandType
-//	'contain' operator supports 'string' operandType
-//	Operator, OperandType and Operands can be defined as following
+//	'>','>=','<','<=' operators supports 'int', 'float' operand valueType
+//	'==', '!=' operator support 'int','float','bool','string' operand valueType
+//	'contain' operator supports 'string' operand valueType
 type ConditionType struct {
-	Operator    string     `json:"operator"`
-	OperandType string     `json:"operandType"`
-	Operands    []*Operand `json:"operands"`
+	Operator string     `json:"operator"`
+	Operands []*Operand `json:"operands"`
 }
 
-// define condition for a Rule which needs to be satisfy to consider rule a matched. Every Condition either logical such as 'and','or','not' or type of custom conditions defined as 'ConditionTypes'
+// 'Condition' define condition for a Rule which needs to be satisfy to consider rule a matched.
 type Condition struct {
-	ConditionType string       `json:"conditionType"`
+	// 'Type' sets type of a condition, either logical such as 'and','or','not' or types defined as 'ConditionTypes' with RuleEngineConfig
+	Type          string       `json:"type"`
 	SubConditions []*Condition `json:"subConditions"`
 }
 
-// defines a rule as model for RuleEngine.
-type Rule struct {
-	Priority      int            `json:"priority"`
-	RootCondition *Condition     `json:"condition"`
-	Result        map[string]any `json:"result"`
+// 'RuleConfig' defines a rule for RuleEngine.
+// Rule is internally n-ary tree, where every node is a Condition, inner nodes of a tree are type of 'and', 'or' or 'not' and leaf nodes are
+// custom conditions from ConditionTypes defined by user
+type RuleConfig struct {
+
+	// 'Priority' is rule priority, evaluation operation prioritize the rule based of this value
+	Priority int `json:"priority"`
+
+	// 'RootCondition' defines n-ary tree of Rule
+	RootCondition *Condition `json:"condition"`
+
+	// 'Result' defines key-value container maintains values and returns as part of 'Output' if Rule matches.
+	Result map[string]any `json:"result"`
 }
 
 // 'RuleEngineConfig' is a configuration for a RuleEngine. defines mandatory input fields, custom conditions and rule
@@ -129,29 +151,31 @@ type RuleEngineConfig struct {
 	// 'Fields' defines mandatory as input for rule engine evaluation
 	Fields Fields `json:"fields"`
 
-	// defines custom ConditionTypes as map having conditionTypeName as key, ConditionType as value
+	// 'ConditionTypes' defines custom condition as map having condition name as key, ConditionType as value
 	ConditionTypes map[string]*ConditionType `json:"conditionTypes"`
 
-	// defines Rules for ruleengine, as map having rulename as key, rule as value
-	Rules map[string]*Rule `json:"rules"`
+	// 'Rules' defines set of rules for ruleengine, as map having rule name as key, RuleConfig as value
+	Rules map[string]*RuleConfig `json:"rules"`
 }
 
-// <key> : <value> is <fieldname> : <typedvalue>
-type typedValueMap map[string]any
+type parsedInput map[string]any
 
 type RuleEngineError struct {
-	ComponentName string
-	ErrMsg        string
-	ErrCode       uint
-	OtherMsg      string
+	ErrCode  uint
+	ErrMsg   string
+	OtherMsg string
 }
 
 func (ce *RuleEngineError) Error() string {
-	return fmt.Sprintf("RuleEngineError: for %v, %v , code:%v otherMsg:%v.", ce.ComponentName, ce.ErrMsg, ce.ErrCode, ce.OtherMsg)
+	return fmt.Sprintf("RuleEngineError: ErrCode:%v ErrMsg:%v. %v", ce.ErrCode, ce.ErrMsg, ce.OtherMsg)
 }
 
-func newError(errCode uint, componentName string, otherMsg string) *RuleEngineError {
-	return &RuleEngineError{ErrCode: errCode, ComponentName: componentName, ErrMsg: errCodeToMessage[errCode], OtherMsg: otherMsg}
+func (ce *RuleEngineError) addMsg(msg string) {
+	ce.OtherMsg = fmt.Sprintf("%v, %v", ce.OtherMsg, msg)
+}
+
+func newError(errCode uint, msgs ...string) *RuleEngineError {
+	return &RuleEngineError{ErrCode: errCode, ErrMsg: errCodeToMessage[errCode], OtherMsg: strings.Join(msgs, ",")}
 }
 
 const (
@@ -162,26 +186,26 @@ const (
 	ErrCodeInvalidConditionType
 	ErrCodeInvalidSubConditionCount
 	ErrCodeConditionTypeNotFound
-	ErrCodeInvalidOperandAs
 	ErrCodeFieldNotFound
-	ErrCodeFailedParsingInput
+	ErrCodeParsingFailed
 	ErrCodeRuleNotFound
 	ErrCodeInvalidEvaluateOperations
 	ErrCodeContextCancelled
+	ErrCodeInvalidOperand
 )
 
 var errCodeToMessage = map[uint]string{
-	ErrCodeInvalidValueType:          "Passed value type is invalid",
+	ErrCodeInvalidValueType:          "Invalid ValueType",
 	ErrCodeInvalidOperator:           "Invalid operator",
 	ErrCodeInvalidOperandType:        "Invalid operandType",
 	ErrCodeInvalidOperandsLength:     "Invalid number of operands",
 	ErrCodeInvalidConditionType:      "Invalid conditionType",
 	ErrCodeInvalidSubConditionCount:  "Invalid sub-condition count",
 	ErrCodeConditionTypeNotFound:     "Could not find conditionType",
-	ErrCodeInvalidOperandAs:          "Invalid operandAs",
 	ErrCodeFieldNotFound:             "Field not found",
-	ErrCodeFailedParsingInput:        "Could not parse input",
+	ErrCodeParsingFailed:             "Could not parse value",
 	ErrCodeRuleNotFound:              "Rule not found",
 	ErrCodeInvalidEvaluateOperations: "Invalid evaluate options value n",
 	ErrCodeContextCancelled:          "Context is cancelled",
+	ErrCodeInvalidOperand:            "Invalid operandtype or valuetype",
 }

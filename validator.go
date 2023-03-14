@@ -1,196 +1,183 @@
 package ruleenginecore
 
 import (
-	"strings"
+	"fmt"
 )
 
-var validValueTypeMap = map[string]bool{IntType: true, FloatType: true, BoolType: true, StringType: true}
-var printableValidValueType string
+type fieldValidatorFunc func(fs Fields) *RuleEngineError
+type conditionTypeValidatorFunc func(ct *ConditionType, fs Fields) *RuleEngineError
+type ruleConditionValidatorFunc func(c *Condition) *RuleEngineError
 
-var validOperatorMap = map[string]bool{GreaterOperator: true, GreaterEqualOperator: true, LessOperator: true, LessEqualOperator: true, EqualOperator: true, NotEqualOperator: true, ContainOperator: true}
-
-func init() {
-	validFields := []string{}
-	for k := range validValueTypeMap {
-		validFields = append(validFields, k)
-	}
-	printableValidValueType = strings.Join(validFields[:], ", ")
-}
-
-// check for
-// 1. is field exist with <name>
-// 2. does field having <name> have type <fType>
-func (fs Fields) isValid(name, fType string) *RuleEngineError {
-	if ft, ok := fs[name]; !ok {
-		return newError(ErrCodeFieldNotFound, "Field:"+name, "")
-	} else if ft != fType {
-		return newError(ErrCodeInvalidValueType, "field:"+name, "field is having type:"+ft+" condition is expecting type:"+fType)
-	}
-	return nil
-}
-
-// validates fields for valid type
-func (fs Fields) validate() *RuleEngineError {
-	for name, fType := range fs {
-		if _, ok := validValueTypeMap[fType]; !ok {
-			return newError(ErrCodeInvalidValueType, "field:"+name, "fieldType is invalid. valid types are "+printableValidValueType)
-		}
-	}
-	return nil
-}
-
-// validating condition type for following
-// 1. valid condition operator
-// 2. valid number of operands for given operator
-// 3. valid operand type for given operator
-// 4. for OperandAsField, match operandType with field type.
-func (c *ConditionType) validateAndParseValues(name string, fs Fields) *RuleEngineError {
-
-	if _, ok := validOperatorMap[c.Operator]; !ok {
-		return newError(ErrCodeInvalidOperator, "condition:"+name, c.Operator+" is invalid operator")
-	}
-
-	if c.Operator == ContainOperator {
-		if len(c.Operands) != 2 {
-			return newError(ErrCodeInvalidOperandsLength, "condition:"+name, c.Operator+" operator expects exactly two operands")
-		}
-
-		if c.OperandType != StringType {
-			return newError(ErrCodeInvalidOperandType, "condition:"+name, c.Operator+" operator only supports '"+StringType+"' type")
-		}
-
-		for _, operand := range c.Operands {
-			if operand.Type == FieldType {
-				if err := fs.isValid(operand.Val, c.OperandType); err != nil {
-					return newError(err.ErrCode, "condition:"+name, err.OtherMsg)
-				}
-			} else if operand.Type == ConstantType {
-				if typedValue, err := getTypedValue(operand.Val, c.OperandType); err != nil {
-					return newError(ErrCodeFailedParsingInput, "condition:"+name, err.Error())
-				} else {
-					operand.typedValue = typedValue
-				}
-			} else {
-				return newError(ErrCodeInvalidOperandAs, "condition:"+name, operand.Type.String()+" is invalid. valid operandAs are "+FieldType.String()+", "+ConstantType.String())
+var fieldValueTypeValidator = func() fieldValidatorFunc {
+	return func(fs Fields) *RuleEngineError {
+		for fieldName, fieldValueType := range fs {
+			if !fieldValueType.isValid() {
+				return newError(ErrCodeInvalidValueType,
+					fmt.Sprintf("field: %v", fieldName),
+					fmt.Sprintf("valid valueTypes are %v.", valueTypeList))
 			}
 		}
+		return nil
 	}
-
-	if c.Operator == EqualOperator || c.Operator == NotEqualOperator {
-		if len(c.Operands) != 2 {
-			return newError(ErrCodeInvalidOperandsLength, "For condition:"+name, c.Operator+" operator expects exactly two operands")
-		}
-
-		if _, ok := validValueTypeMap[c.OperandType]; !ok {
-			return newError(ErrCodeInvalidOperandType, "condition:"+name, c.Operator+" operator supports "+printableValidValueType+" types")
-		}
-
-		for _, operand := range c.Operands {
-			if operand.Type == FieldType {
-				if err := fs.isValid(operand.Val, c.OperandType); err != nil {
-					return newError(err.ErrCode, "condition:"+name, err.OtherMsg)
-				}
-			} else if operand.Type == ConstantType {
-				if typedValue, err := getTypedValue(operand.Val, c.OperandType); err != nil {
-					return newError(ErrCodeFailedParsingInput, "condition:"+name, err.Error())
-				} else {
-					operand.typedValue = typedValue
-				}
-			} else {
-				return newError(ErrCodeInvalidOperandAs, "condition:"+name, operand.Type.String()+" is invalid. valid operandAs are "+FieldType.String()+", "+ConstantType.String())
-			}
-		}
-	}
-
-	if c.Operator == GreaterOperator || c.Operator == GreaterEqualOperator || c.Operator == LessOperator || c.Operator == LessEqualOperator {
-
-		if len(c.Operands) != 2 {
-			return newError(ErrCodeInvalidOperandsLength, "condition:"+name, c.Operator+" operator expects exactly two operands")
-		}
-
-		if c.OperandType != IntType && c.OperandType != FloatType {
-			return newError(ErrCodeInvalidOperandType, "condition:"+name, c.Operator+" operator supports "+IntType+", "+FloatType+" types")
-		}
-
-		for _, operand := range c.Operands {
-			if operand.Type == FieldType {
-				if err := fs.isValid(operand.Val, c.OperandType); err != nil {
-					return newError(err.ErrCode, "condition:"+name, err.OtherMsg)
-				}
-			} else if operand.Type == ConstantType {
-				if typedValue, err := getTypedValue(operand.Val, c.OperandType); err != nil {
-					return newError(ErrCodeFailedParsingInput, "condition:"+name, err.Error())
-				} else {
-					operand.typedValue = typedValue
-				}
-			} else {
-				return newError(ErrCodeInvalidOperandAs, "condition:"+name, operand.Type.String()+" is invalid. valid operandAs are "+FieldType.String()+", "+ConstantType.String())
-			}
-		}
-	}
-
-	return nil
 }
 
-// validating rule for following
-// 1. valid condition logical operator ( 'and' | 'or' )
-// 2. validate innerCondition for either logical condition or customConditionTypes
-func (r *Rule) validate(name string, custConditionType map[string]*ConditionType) *RuleEngineError {
-	return validateCondition(name, r.RootCondition, custConditionType)
+var operandCountValidator = func(count int) conditionTypeValidatorFunc {
+	return func(ct *ConditionType, fs Fields) *RuleEngineError {
+		if len(ct.Operands) != count {
+			return newError(ErrCodeInvalidOperandsLength,
+				fmt.Sprintf("expected operand count is  %v", count))
+		}
+		return nil
+	}
 }
 
-func validateCondition(name string, c *Condition, custConditionType map[string]*ConditionType) *RuleEngineError {
+var operandsWithSameValueTypeValidator = func() conditionTypeValidatorFunc {
+	return func(ct *ConditionType, fs Fields) *RuleEngineError {
+		var valueType *ValueType = nil
+		for _, op := range ct.Operands {
+			if valueType == nil {
+				valueType = &op.ValueType
+				continue
+			}
 
-	if c.ConditionType == OrOperator || c.ConditionType == AndOperator {
-
-		if len(c.SubConditions) < 2 {
-			return newError(ErrCodeInvalidSubConditionCount, "rule:"+name, "conditionType:"+c.ConditionType+" expects at-least 2 sub-conditions")
+			if *valueType != op.ValueType {
+				return newError(ErrCodeInvalidOperand,
+					"Expecting same valueType for all the operands")
+			}
 		}
 
-		for _, cond := range c.SubConditions {
-			if err := validateCondition(name, cond, custConditionType); err != nil {
+		return nil
+	}
+}
+
+var operandValueTypeValidator = func(supportedValueTypes ...ValueType) conditionTypeValidatorFunc {
+	var supportedTypeSet = NewSet[ValueType]()
+	var supportedTypeCommaSepStr string
+	for _, valueType := range supportedValueTypes {
+		supportedTypeSet.Add(valueType)
+		if len(supportedTypeCommaSepStr) == 0 {
+			supportedTypeCommaSepStr = valueType.String()
+		} else {
+			supportedTypeCommaSepStr = fmt.Sprintf("%v, %v", supportedTypeCommaSepStr, valueType)
+		}
+	}
+
+	return func(ct *ConditionType, fs Fields) *RuleEngineError {
+		for _, op := range ct.Operands {
+			if !supportedTypeSet.Contains(op.ValueType) {
+				return newError(ErrCodeInvalidOperand,
+					fmt.Sprintf("Operand having invalid valueType. Supported valueType are %v", supportedTypeCommaSepStr))
+			}
+		}
+		return nil
+	}
+}
+
+var operandValidator = func() conditionTypeValidatorFunc {
+	return func(ct *ConditionType, fs Fields) *RuleEngineError {
+		for _, op := range ct.Operands {
+			if err := validateAndParseOperand(op, fs); err != nil {
 				return err
 			}
 		}
 		return nil
 	}
-
-	if c.ConditionType == NegationOperator {
-
-		if len(c.SubConditions) != 1 {
-			return newError(ErrCodeInvalidSubConditionCount, "rule:"+name, "conditionType:"+c.ConditionType+" expects exactly one sub-condition")
-		}
-
-		for _, cond := range c.SubConditions {
-			if err := validateCondition(name, cond, custConditionType); err != nil {
-				return err
-			}
-		}
-		return nil
-	}
-
-	if _, ok := custConditionType[c.ConditionType]; ok {
-		return nil
-	}
-
-	return newError(ErrCodeConditionTypeNotFound, "rule:"+name, "conditionType:"+c.ConditionType+" not found")
 }
 
-// validates for valid types, operators, condition definition and rule definition.
-func (c *RuleEngineConfig) Validate() *RuleEngineError {
-	err := c.Fields.validate()
+func validateAndParseOperand(operand *Operand, fs Fields) *RuleEngineError {
+
+	if !operand.valid() {
+		return newError(ErrCodeInvalidOperand, "Invalid ValueType or OperandType")
+	}
+
+	// Field operandType
+	if operand.isField() {
+		if !fs.exist(operand.Val, operand.ValueType) {
+			return newError(ErrCodeFieldNotFound,
+				fmt.Sprintf("Expecting field: %v with valueType: %v", operand.Val, operand.ValueType))
+		}
+		return nil
+	}
+
+	// Constant operandType
+	typedValue, err := parseValue(operand.Val, operand.ValueType)
 	if err != nil {
+		err.addMsg(fmt.Sprintf("Constant operand with value: %v failed to parse as ValueType: %v",
+			operand.Val, operand.ValueType))
 		return err
 	}
 
-	for conditionName, customCondition := range c.ConditionTypes {
-		if err := customCondition.validateAndParseValues(conditionName, c.Fields); err != nil {
+	operand.typedValue = typedValue
+	return nil
+}
+
+var subConditionCountRuleConditionValidator = func(count int) ruleConditionValidatorFunc {
+	return func(c *Condition) *RuleEngineError {
+		if len(c.SubConditions) != count {
+			return newError(ErrCodeInvalidSubConditionCount)
+		}
+		return nil
+	}
+}
+
+var minSubConditionCountRuleConditionValidator = func(count int) ruleConditionValidatorFunc {
+	return func(c *Condition) *RuleEngineError {
+		if len(c.SubConditions) < count {
+			return newError(ErrCodeInvalidSubConditionCount)
+		}
+		return nil
+	}
+}
+
+type ruleEngineConfigValidator struct {
+	fieldValidators         []fieldValidatorFunc
+	condTypeValidators      map[string][]conditionTypeValidatorFunc
+	ruleConditionValidators map[string][]ruleConditionValidatorFunc
+}
+
+func (v *ruleEngineConfigValidator) addFieldValidator(validators ...fieldValidatorFunc) {
+	v.fieldValidators = validators
+}
+
+func (v *ruleEngineConfigValidator) addConditionTypeValidator(operator string, validators ...conditionTypeValidatorFunc) {
+	v.condTypeValidators[operator] = validators
+}
+
+func (v *ruleEngineConfigValidator) addRuleConditionValidator(operator string, validators ...ruleConditionValidatorFunc) {
+	v.ruleConditionValidators[operator] = validators
+}
+
+func (v *ruleEngineConfigValidator) validateConditionType(ct *ConditionType, fs Fields) *RuleEngineError {
+	validatorFuncs := v.condTypeValidators[ct.Operator]
+
+	for _, validatorFunc := range validatorFuncs {
+		if err := validatorFunc(ct, fs); err != nil {
 			return err
 		}
 	}
+	return nil
+}
 
-	for ruleName, rule := range c.Rules {
-		if err := rule.validate(ruleName, c.ConditionTypes); err != nil {
+func (v *ruleEngineConfigValidator) validateRule(rc *RuleConfig) *RuleEngineError {
+	return validateRuleCondition(v, rc.RootCondition)
+}
+
+// recursive validation for Rule Condition
+func validateRuleCondition(v *ruleEngineConfigValidator, c *Condition) *RuleEngineError {
+	validatorFuncs, ok := v.ruleConditionValidators[c.Type]
+	if ok {
+
+		for _, validatorFunc := range validatorFuncs {
+			if err := validatorFunc(c); err != nil {
+				return err
+			}
+		}
+
+	}
+
+	for _, subCond := range c.SubConditions {
+		// recursion
+		if err := validateRuleCondition(v, subCond); err != nil {
 			return err
 		}
 	}
@@ -198,21 +185,93 @@ func (c *RuleEngineConfig) Validate() *RuleEngineError {
 	return nil
 }
 
-// validates for mandatory fields and type conversion from string to respective field type
-func (input Input) validateAndParseValues(fs Fields) (typedValueMap, *RuleEngineError) {
-	ret := typedValueMap{}
-	for fieldname, fieldtype := range fs {
-		strVal, found := input[fieldname]
-		if !found {
-			return nil, newError(ErrCodeFieldNotFound, "input", "field:"+fieldname+" with type:"+fieldtype+" is mandatory")
-		}
-
-		if val, err := getTypedValue(strVal, fieldtype); err != nil {
-			return nil, newError(ErrCodeFailedParsingInput, "input:"+fieldname, err.Error())
-		} else {
-			ret[fieldname] = val
+func (v *ruleEngineConfigValidator) validate(config *RuleEngineConfig) *RuleEngineError {
+	for _, fieldValidator := range v.fieldValidators {
+		if err := fieldValidator(config.Fields); err != nil {
+			return err
 		}
 	}
 
-	return ret, nil
+	for conditionTypeName, conditionType := range config.ConditionTypes {
+		if err := v.validateConditionType(conditionType, config.Fields); err != nil {
+			err.addMsg(fmt.Sprintf("ConditionType: %v", conditionTypeName))
+			return err
+		}
+	}
+
+	for ruleName, rc := range config.Rules {
+		if err := v.validateRule(rc); err != nil {
+			err.addMsg(fmt.Sprintf("RuleName: %v", ruleName))
+			return err
+		}
+	}
+
+	return nil
+}
+
+var engineConfigValidator = ruleEngineConfigValidator{
+	fieldValidators:         []fieldValidatorFunc{},
+	condTypeValidators:      make(map[string][]conditionTypeValidatorFunc),
+	ruleConditionValidators: make(map[string][]ruleConditionValidatorFunc),
+}
+
+func init() {
+	engineConfigValidator.addFieldValidator(fieldValueTypeValidator())
+
+	engineConfigValidator.addConditionTypeValidator(EqualOperator,
+		operandCountValidator(2),
+		operandsWithSameValueTypeValidator(),
+		operandValueTypeValidator(Integer, Float, Boolean, String),
+		operandValidator(),
+	)
+	engineConfigValidator.addConditionTypeValidator(NotEqualOperator,
+		operandCountValidator(2),
+		operandsWithSameValueTypeValidator(),
+		operandValueTypeValidator(Integer, Float, Boolean, String),
+		operandValidator(),
+	)
+
+	engineConfigValidator.addConditionTypeValidator(GreaterOperator,
+		operandCountValidator(2),
+		operandsWithSameValueTypeValidator(),
+		operandValueTypeValidator(Integer, Float),
+		operandValidator(),
+	)
+
+	engineConfigValidator.addConditionTypeValidator(GreaterEqualOperator,
+		operandCountValidator(2),
+		operandsWithSameValueTypeValidator(),
+		operandValueTypeValidator(Integer, Float),
+		operandValidator(),
+	)
+
+	engineConfigValidator.addConditionTypeValidator(LessOperator,
+		operandCountValidator(2),
+		operandsWithSameValueTypeValidator(),
+		operandValueTypeValidator(Integer, Float),
+		operandValidator(),
+	)
+	engineConfigValidator.addConditionTypeValidator(LessEqualOperator,
+		operandCountValidator(2),
+		operandsWithSameValueTypeValidator(),
+		operandValueTypeValidator(Integer, Float),
+		operandValidator(),
+	)
+
+	engineConfigValidator.addConditionTypeValidator(ContainOperator,
+		operandCountValidator(2),
+		operandsWithSameValueTypeValidator(),
+		operandValueTypeValidator(String),
+		operandValidator(),
+	)
+
+	engineConfigValidator.addRuleConditionValidator(OrCondition,
+		minSubConditionCountRuleConditionValidator(2))
+
+	engineConfigValidator.addRuleConditionValidator(AndCondition,
+		minSubConditionCountRuleConditionValidator(2))
+
+	engineConfigValidator.addRuleConditionValidator(NegationCondition,
+		subConditionCountRuleConditionValidator(1))
+
 }

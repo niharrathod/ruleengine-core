@@ -1,10 +1,19 @@
-// rulengine-core is a strickly typed rule engine library, provding a simple interface to create ruleengine and evaluate rule for given input.
+// rulengine-core is a strictly typed rule engine library, providing a simple interface to create ruleengine and evaluate rule for given input.
 package ruleenginecore
 
 import (
 	"context"
+	"fmt"
 	"sort"
 )
+
+type RuleEngine interface {
+	// 'Evaluate' evaluates the input based on options
+	Evaluate(ctx context.Context, input Input, op *evaluateOption) ([]*Output, *RuleEngineError)
+
+	// 'EvaluateSingleRule' evaluates the input for one rule having given 'rulename'
+	EvaluateSingleRule(ctx context.Context, input Input, rulename string) (*Output, *RuleEngineError)
+}
 
 type rule struct {
 	name          string
@@ -13,11 +22,25 @@ type rule struct {
 	result        map[string]any
 }
 
-func (r *rule) evaluate(ctx context.Context, input typedValueMap) (bool, *RuleEngineError) {
+func newRule(ruleName string, r *RuleConfig, customConditionType map[string]*ConditionType, fs Fields) (*rule, *RuleEngineError) {
+	rootEvaluator, err := ruleEvaluatorBuild(r.RootCondition, customConditionType, fs)
+	if err != nil {
+		return nil, err
+	}
+	ru := &rule{
+		name:          ruleName,
+		priority:      r.Priority,
+		result:        r.Result,
+		rootEvaluator: rootEvaluator,
+	}
+	return ru, nil
+}
+
+func (r *rule) evaluate(ctx context.Context, input parsedInput) (bool, *RuleEngineError) {
 	out := make(chan bool)
 	ctxCancelled := false
 
-	go func(ctx context.Context, input typedValueMap, resultChan chan<- bool) {
+	go func(ctx context.Context, input parsedInput, resultChan chan<- bool) {
 		select {
 		case <-ctx.Done():
 			ctxCancelled = true
@@ -30,13 +53,14 @@ func (r *rule) evaluate(ctx context.Context, input typedValueMap) (bool, *RuleEn
 	result := <-out
 
 	if ctxCancelled {
-		return false, newError(ErrCodeContextCancelled, "ruleEvaluation : "+r.name, "")
+		return false, newError(ErrCodeContextCancelled,
+			fmt.Sprintf("Context cancelled while evaluating RuleName: %v", r.name))
 	}
 	return result, nil
 }
 
 type ruleEngine struct {
-	fields map[string]string
+	fields Fields
 
 	// map of rulename and rule
 	ruleMap map[string]*rule
@@ -45,46 +69,123 @@ type ruleEngine struct {
 	rules []*rule
 }
 
-type RuleEngine interface {
-	// Evaluates the input based on options
-	// example,
-	//
-	//  1. Evaluate(input, ruleenginecore.EvaluateOptions().Complete())
-	//     this would evaluate all rules and returns output as a slice of matched rule.
-	//
-	//  2. Evaluate(input, ruleenginecore.EvaluateOptions().AscendingPriorityBased(5))
-	//     this would evaluate rules in ascending priority order (ex : 1,2,3...) and returns top 5 matched rule as output
-	//
-	//  3. Evaluate(input, ruleenginecore.EvaluateOptions().DescendingPriorityBased(5))
-	//     this would evaluate rules in descending priority order (ex: 10,9,8...) and returns top 5 matched rule as output
-	Evaluate(ctx context.Context, input Input, op *EvaluateOption) ([]*Output, *RuleEngineError)
+func (re *ruleEngine) validateAndParseInput(input Input) (parsedInput, *RuleEngineError) {
+	ret := parsedInput{}
+	for fieldname, fieldtype := range re.fields {
+		strVal, found := input[fieldname]
+		if !found {
+			return nil, newError(ErrCodeFieldNotFound,
+				fmt.Sprintf("Expecting input with name: %v and valueType: %v", fieldname, fieldtype))
+		}
 
-	// Evaluate the input but only one rule having given 'rulename'
-	EvaluateHavingRulename(ctx context.Context, input Input, rulename string) (*Output, *RuleEngineError)
+		if val, err := parseValue(strVal, fieldtype); err != nil {
+			err.addMsg(fmt.Sprintf("Input parsing failed for field: %v having type %v", fieldname, fieldtype))
+			return nil, err
+		} else {
+			ret[fieldname] = val
+		}
+	}
+
+	return ret, nil
 }
 
-// creates new rule engine with given engine configuration
-func New(engineConfig *RuleEngineConfig) (RuleEngine, *RuleEngineError) {
-	err := engineConfig.Validate()
+func (re *ruleEngine) Evaluate(ctx context.Context, input Input, op *evaluateOption) ([]*Output, *RuleEngineError) {
+	parsedInput, err := re.validateAndParseInput(input)
 	if err != nil {
 		return nil, err
 	}
 
-	engine := ruleEngine{fields: map[string]string{}, ruleMap: map[string]*rule{}, rules: []*rule{}}
+	if op.evalType == complete {
+		return re.ascendingEvaluation(ctx, parsedInput, len(re.rules))
+	} else if op.evalType == ascendingPriorityBased {
+		return re.ascendingEvaluation(ctx, parsedInput, op.limit)
+	} else {
+		return re.descendingEvaluation(ctx, parsedInput, op.limit)
+	}
+}
 
-	for fieldname, fieldtype := range engineConfig.Fields {
-		engine.fields[fieldname] = fieldtype
+func (re *ruleEngine) ascendingEvaluation(ctx context.Context, input parsedInput, limit int) ([]*Output, *RuleEngineError) {
+	result := []*Output{}
+	for i := 0; i < len(re.rules); i++ {
+		rule := re.rules[i]
+		matched, err := rule.evaluate(ctx, input)
+		if err != nil {
+			return nil, err
+		}
+
+		if matched {
+			result = append(result, newOutput(rule.name, rule.priority, rule.result))
+
+			if len(result) == limit {
+				break
+			}
+		}
+	}
+	return result, nil
+}
+
+func (re *ruleEngine) descendingEvaluation(ctx context.Context, input parsedInput, limit int) ([]*Output, *RuleEngineError) {
+	result := []*Output{}
+	for i := len(re.rules) - 1; i >= 0; i-- {
+		rule := re.rules[i]
+		matched, err := rule.evaluate(ctx, input)
+		if err != nil {
+			return nil, err
+		}
+
+		if matched {
+			result = append(result, newOutput(rule.name, rule.priority, rule.result))
+
+			if len(result) == limit {
+				break
+			}
+		}
+	}
+	return result, nil
+}
+
+func (re *ruleEngine) EvaluateSingleRule(ctx context.Context, input Input, rulename string) (*Output, *RuleEngineError) {
+	parsedInput, err := re.validateAndParseInput(input)
+	if err != nil {
+		return nil, err
 	}
 
-	for rname, r := range engineConfig.Rules {
-		ru := rule{
-			name:          rname,
-			priority:      r.Priority,
-			result:        r.Result,
-			rootEvaluator: prepareEvaluatorTree(r.RootCondition, engineConfig.ConditionTypes),
+	rule, ok := re.ruleMap[rulename]
+	if !ok {
+		return nil, newError(ErrCodeRuleNotFound, fmt.Sprintf("RuleName: %v", rulename))
+	}
+
+	matched, err := rule.evaluate(ctx, parsedInput)
+	if err != nil {
+		return nil, err
+	}
+
+	if matched {
+		return newOutput(rulename, rule.priority, rule.result), nil
+	}
+	return nil, nil
+}
+
+// creates new rule engine using provided configuration
+func New(engineConfig *RuleEngineConfig) (RuleEngine, *RuleEngineError) {
+
+	if err := engineConfigValidator.validate(engineConfig); err != nil {
+		return nil, err
+	}
+
+	engine := ruleEngine{
+		fields:  engineConfig.Fields,
+		ruleMap: map[string]*rule{},
+		rules:   []*rule{},
+	}
+
+	for ruleName, r := range engineConfig.Rules {
+		ru, err := newRule(ruleName, r, engineConfig.ConditionTypes, engine.fields)
+		if err != nil {
+			return nil, err
 		}
-		engine.ruleMap[rname] = &ru
-		engine.rules = append(engine.rules, &ru)
+		engine.ruleMap[ruleName] = ru
+		engine.rules = append(engine.rules, ru)
 	}
 
 	sort.Slice(engine.rules, func(i, j int) bool {
@@ -92,159 +193,4 @@ func New(engineConfig *RuleEngineConfig) (RuleEngine, *RuleEngineError) {
 	})
 
 	return &engine, nil
-}
-
-func prepareEvaluatorTree(cond *Condition, customConditions map[string]*ConditionType) evaluator {
-	switch cType := cond.ConditionType; cType {
-	case AndOperator, OrOperator, NegationOperator:
-		logicalEval := logicalEvaluator{
-			operator:        cType,
-			innerEvaluators: []evaluator{},
-		}
-
-		for _, subCondition := range cond.SubConditions {
-			logicalEval.innerEvaluators = append(logicalEval.innerEvaluators, prepareEvaluatorTree(subCondition, customConditions))
-		}
-
-		return &logicalEval
-
-	default:
-		custCondition, ok := customConditions[cType]
-
-		if !ok {
-			panic("Could not find condition for " + cType + " type.")
-		}
-
-		switch op := custCondition.Operator; op {
-		case GreaterOperator:
-			return &greaterEvaluator{operandType: custCondition.OperandType, operands: custCondition.Operands}
-		case GreaterEqualOperator:
-			return &greaterEqualEvaluator{operandType: custCondition.OperandType, operands: custCondition.Operands}
-		case LessOperator:
-			return &lessEvaluator{operandType: custCondition.OperandType, operands: custCondition.Operands}
-		case LessEqualOperator:
-			return &lessEqualEvaluator{operandType: custCondition.OperandType, operands: custCondition.Operands}
-		case EqualOperator:
-			return &equalEvaluator{operandType: custCondition.OperandType, operands: custCondition.Operands}
-		case NotEqualOperator:
-			return &notEqualEvaluator{operandType: custCondition.OperandType, operands: custCondition.Operands}
-		case ContainOperator:
-			return &containEvaluator{operandType: custCondition.OperandType, operands: custCondition.Operands}
-		default:
-			panic("Could not find condition for " + cType + " type.")
-		}
-	}
-}
-
-func (re *ruleEngine) Evaluate(ctx context.Context, input Input, op *EvaluateOption) ([]*Output, *RuleEngineError) {
-	inputVals, err := input.validateAndParseValues(re.fields)
-	if err != nil {
-		return nil, err
-	}
-
-	if op.evalType != Complete && op.limit <= 0 {
-		return nil, newError(ErrCodeInvalidEvaluateOperations, "EvaluateOption", "priority option with 'n' should be greater than 0")
-	}
-
-	result := []*Output{}
-
-	if op.evalType == Complete {
-		for i := 0; i < len(re.rules); i++ {
-			rule := re.rules[i]
-			matched, err := rule.evaluate(ctx, inputVals)
-
-			if err != nil {
-				return nil, err
-			}
-
-			if matched {
-				out := Output{
-					Rulename: rule.name,
-					Priority: rule.priority,
-					Result:   rule.result,
-				}
-
-				result = append(result, &out)
-			}
-		}
-
-		return result, nil
-
-	} else if op.evalType == AscendingPriorityBased {
-		for i := 0; i < len(re.rules); i++ {
-			rule := re.rules[i]
-			matched, err := rule.evaluate(ctx, inputVals)
-			if err != nil {
-				return nil, err
-			}
-
-			if matched {
-				out := Output{
-					Rulename: rule.name,
-					Priority: rule.priority,
-					Result:   rule.result,
-				}
-
-				result = append(result, &out)
-
-				op.limit--
-				if op.limit == 0 {
-					break
-				}
-			}
-		}
-
-		return result, nil
-	} else {
-		for i := len(re.rules) - 1; i >= 0; i-- {
-			rule := re.rules[i]
-			matched, err := rule.evaluate(ctx, inputVals)
-			if err != nil {
-				return nil, err
-			}
-
-			if matched {
-				out := Output{
-					Rulename: rule.name,
-					Priority: rule.priority,
-					Result:   rule.result,
-				}
-
-				result = append(result, &out)
-
-				op.limit--
-				if op.limit == 0 {
-					break
-				}
-			}
-		}
-		return result, nil
-	}
-}
-
-func (re *ruleEngine) EvaluateHavingRulename(ctx context.Context, input Input, rulename string) (*Output, *RuleEngineError) {
-	inputVals, err := input.validateAndParseValues(re.fields)
-	if err != nil {
-		return nil, err
-	}
-
-	if rule, ok := re.ruleMap[rulename]; ok {
-		matched, err := rule.evaluate(ctx, inputVals)
-		if err != nil {
-			return nil, err
-		}
-
-		if matched {
-			result := Output{
-				Rulename: rulename,
-				Priority: rule.priority,
-				Result:   rule.result,
-			}
-			return &result, nil
-		}
-		return nil, nil
-
-	} else {
-		return nil, newError(ErrCodeRuleNotFound, "rulename:"+rulename, "")
-	}
 }

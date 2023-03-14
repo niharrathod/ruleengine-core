@@ -1,631 +1,1438 @@
 package ruleenginecore
 
 import (
-	"reflect"
 	"testing"
 )
 
-func TestFields_IsValid(t *testing.T) {
-	type args struct {
-		fieldname string
-		fieldtype string
+func isErrorEqual(err1, err2 *RuleEngineError) bool {
+	if err1 == nil && err2 == nil {
+		return true
 	}
-	tests := []struct {
-		name    string
-		fs      Fields
-		args    args
-		wantErr *RuleEngineError
-	}{
-		{
-			name: "ValidNameAndType",
-			fs:   Fields{"dog": "int", "cat": "string"},
-			args: args{
-				fieldname: "dog",
-				fieldtype: "int",
-			},
-			wantErr: nil,
-		},
-		{
-			name: "FieldNotFound",
-			fs:   Fields{"dog": "int", "cat": "string"},
-			args: args{
-				fieldname: "rat",
-				fieldtype: "string",
-			},
-			wantErr: &RuleEngineError{
-				ErrCode: ErrCodeFieldNotFound,
-			},
-		},
-		{
-			name: "InvalidFieldType",
-			fs:   Fields{"dog": "int", "cat": "string"},
-			args: args{
-				fieldname: "dog",
-				fieldtype: "string",
-			},
-			wantErr: &RuleEngineError{
-				ErrCode: ErrCodeInvalidValueType,
-			},
-		},
+
+	if err1 != nil && err2 != nil && err1.ErrCode == err2.ErrCode {
+		return true
 	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			gotErr := tt.fs.isValid(tt.args.fieldname, tt.args.fieldtype)
 
-			if (tt.wantErr == nil) && (gotErr == nil) {
-				return
-			}
-
-			if gotErr != nil && tt.wantErr != nil && gotErr.ErrCode == tt.wantErr.ErrCode {
-				return
-			}
-
-			t.Errorf("Fields.IsValid() gotErr:%v, wantErr:%v ", gotErr, tt.wantErr)
-		})
-	}
+	return false
 }
 
-func TestFields_validate(t *testing.T) {
-	tests := []struct {
-		name    string
-		fs      Fields
-		wantErr *RuleEngineError
-	}{
-		{
-			name:    "ValidNameAndType",
-			fs:      Fields{"dog": "int", "cat": "string"},
-			wantErr: nil,
-		},
-		{
-			name: "ValidNameAndType",
-			fs:   Fields{"dog": "int", "cat": "invalid"},
-			wantErr: &RuleEngineError{
-				ErrCode: ErrCodeInvalidValueType,
-			},
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			gotErr := tt.fs.validate()
-			if (tt.wantErr == nil) && (gotErr == nil) {
-				return
-			}
-
-			if gotErr != nil && tt.wantErr != nil && gotErr.ErrCode == tt.wantErr.ErrCode {
-				return
-			}
-
-			t.Errorf("fs.validate() gotErr:%v, wantErr:%v ", gotErr, tt.wantErr)
-		})
-	}
-}
-
-func TestConditionType_validateAndParseValues(t *testing.T) {
-	type args struct {
-		name string
-		fs   Fields
-	}
-	tests := []struct {
-		name          string
-		conditionType ConditionType
-		args          args
-		wantErr       *RuleEngineError
-	}{
-		{
-			name: "validConditionGreaterInt",
-			conditionType: ConditionType{Operator: GreaterOperator,
-				OperandType: IntType,
-				Operands:    []*Operand{{Type: FieldType, Val: "discount"}, {Type: ConstantType, Val: "10"}}},
-
-			args:    args{name: "DiscountGreaterThan10", fs: Fields{"discount": IntType}},
-			wantErr: nil,
-		},
-		{
-			name: "InvalidOperandLength",
-			conditionType: ConditionType{Operator: GreaterOperator,
-				OperandType: IntType,
-				Operands:    []*Operand{{Type: FieldType, Val: "discount"}, {Type: ConstantType, Val: "10"}, {Type: ConstantType, Val: "10"}}},
-
-			args: args{name: "DiscountGreaterThan10", fs: Fields{"discount": IntType}},
-			wantErr: &RuleEngineError{
-				ErrCode: ErrCodeInvalidOperandsLength,
-			},
-		},
-		{
-			name: "InvalidOperandType",
-			conditionType: ConditionType{Operator: GreaterOperator,
-				OperandType: StringType,
-				Operands:    []*Operand{{Type: FieldType, Val: "discount"}, {Type: ConstantType, Val: "10"}}},
-
-			args: args{name: "DiscountGreaterThan10", fs: Fields{"discount": IntType}},
-			wantErr: &RuleEngineError{
-				ErrCode: ErrCodeInvalidOperandType,
-			},
-		},
-		{
-			name: "ParsingConstantOperandFailed",
-			conditionType: ConditionType{Operator: GreaterOperator,
-				OperandType: IntType,
-				Operands:    []*Operand{{Type: FieldType, Val: "discount"}, {Type: ConstantType, Val: "asdf"}}},
-
-			args: args{name: "DiscountGreaterThan10", fs: Fields{"discount": IntType}},
-			wantErr: &RuleEngineError{
-				ErrCode: ErrCodeFailedParsingInput,
-			},
-		},
-		// {
-		// 	name: "InvalidOperandAs",
-		// 	conditionType: ConditionType{Operator: GreaterOperator,
-		// 		OperandType: IntType,
-		// 		Operands:    []*Operand{{Type: FieldType, Val: "discount"}, {Type: ConstantType, Val: "asdf"}}},
-
-		// 	args: args{name: "DiscountGreaterThan10", fs: Fields{"discount": IntType}},
-		// 	wantErr: &RuleEngineError{
-		// 		ErrCode: ErrCodeInvalidOperandAs,
-		// 	},
-		// },
-		{
-			name: "InvalidOperator",
-			conditionType: ConditionType{Operator: ")",
-				OperandType: IntType,
-				Operands:    []*Operand{{Type: FieldType, Val: "discount"}, {Type: ConstantType, Val: "asdf"}}},
-
-			args: args{name: "DiscountGreaterThan10", fs: Fields{"discount": IntType}},
-			wantErr: &RuleEngineError{
-				ErrCode: ErrCodeInvalidOperator,
-			},
-		},
-		{
-			name: "ValidContain",
-			conditionType: ConditionType{Operator: ContainOperator,
-				OperandType: StringType,
-				Operands:    []*Operand{{Type: FieldType, Val: "story"}, {Type: ConstantType, Val: "dog"}}},
-
-			args:    args{name: "StoryHasDogCondition", fs: Fields{"story": StringType}},
-			wantErr: nil,
-		},
-		// {
-		// 	name: "InvalidContainOperandAs",
-		// 	conditionType: ConditionType{Operator: ContainOperator,
-		// 		OperandType: StringType,
-		// 		Operands:    []*Operand{{Type: "Invalid", Val: "story"}, {Type: ConstantType, Val: "dog"}}},
-
-		// 	args: args{name: "StoryHasDogCondition", fs: Fields{"story": StringType}},
-		// 	wantErr: &RuleEngineError{
-		// 		ErrCode: ErrCodeInvalidOperandAs,
-		// 	},
-		// },
-		{
-			name: "ValidContain",
-			conditionType: ConditionType{Operator: ContainOperator,
-				OperandType: StringType,
-				Operands:    []*Operand{{Type: FieldType, Val: "story"}, {Type: ConstantType, Val: "dog"}}},
-
-			args:    args{name: "StoryHasDogCondition", fs: Fields{"story": StringType}},
-			wantErr: nil,
-		},
-		{
-			name: "InvalidContainOperandLength",
-			conditionType: ConditionType{Operator: ContainOperator,
-				OperandType: StringType,
-				Operands:    []*Operand{{Type: FieldType, Val: "story"}}},
-
-			args: args{name: "StoryHasDogCondition", fs: Fields{"story": StringType}},
-			wantErr: &RuleEngineError{
-				ErrCode: ErrCodeInvalidOperandsLength,
-			},
-		},
-		{
-			name: "InvalidContainOperandType",
-			conditionType: ConditionType{Operator: ContainOperator,
-				OperandType: "Invalid",
-				Operands:    []*Operand{{Type: FieldType, Val: "story"}, {Type: FieldType, Val: "story"}}},
-
-			args: args{name: "StoryHasDogCondition", fs: Fields{"story": StringType}},
-			wantErr: &RuleEngineError{
-				ErrCode: ErrCodeInvalidOperandType,
-			},
-		},
-		{
-			name: "InvalidContainOperandType",
-			conditionType: ConditionType{Operator: ContainOperator,
-				OperandType: StringType,
-				Operands:    []*Operand{{Type: FieldType, Val: "story"}, {Type: ConstantType, Val: "dog"}}},
-
-			args: args{name: "StoryHasDogCondition", fs: Fields{"story": IntType}},
-			wantErr: &RuleEngineError{
-				ErrCode: ErrCodeInvalidValueType,
-			},
-		},
-		{
-			name: "ValidEqual",
-			conditionType: ConditionType{Operator: EqualOperator,
-				OperandType: StringType,
-				Operands:    []*Operand{{Type: FieldType, Val: "story"}, {Type: FieldType, Val: "story"}}},
-
-			args:    args{name: "StoryHasDogCondition", fs: Fields{"story": StringType}},
-			wantErr: nil,
-		},
-		{
-			name: "InvalidEqualOperandLength",
-			conditionType: ConditionType{Operator: EqualOperator,
-				OperandType: StringType,
-				Operands:    []*Operand{{Type: FieldType, Val: "story"}}},
-
-			args: args{name: "StoryHasDogCondition", fs: Fields{"story": StringType}},
-			wantErr: &RuleEngineError{
-				ErrCode: ErrCodeInvalidOperandsLength,
-			},
-		},
-		{
-			name: "InvalidEqualOperandType",
-			conditionType: ConditionType{Operator: EqualOperator,
-				OperandType: "asdf",
-				Operands:    []*Operand{{Type: FieldType, Val: "story"}, {Type: FieldType, Val: "story"}}},
-
-			args: args{name: "StoryHasDogCondition", fs: Fields{"story": StringType}},
-			wantErr: &RuleEngineError{
-				ErrCode: ErrCodeInvalidOperandType,
-			},
-		},
-		{
-			name: "InvalidEqualOperandValueType",
-			conditionType: ConditionType{Operator: EqualOperator,
-				OperandType: IntType,
-				Operands:    []*Operand{{Type: FieldType, Val: "story"}, {Type: FieldType, Val: "story"}}},
-
-			args: args{name: "StoryHasDogCondition", fs: Fields{"story": StringType}},
-			wantErr: &RuleEngineError{
-				ErrCode: ErrCodeInvalidValueType,
-			},
-		},
-		{
-			name: "InvalidEqualConstantValue",
-			conditionType: ConditionType{Operator: EqualOperator,
-				OperandType: IntType,
-				Operands:    []*Operand{{Type: FieldType, Val: "count"}, {Type: ConstantType, Val: "asdf"}}},
-
-			args: args{name: "CountIs100", fs: Fields{"count": IntType}},
-			wantErr: &RuleEngineError{
-				ErrCode: ErrCodeFailedParsingInput,
-			},
-		},
-		// {
-		// 	name: "InvalidEqualOperandAs",
-		// 	conditionType: ConditionType{Operator: EqualOperator,
-		// 		OperandType: IntType,
-		// 		Operands:    []*Operand{{Type: "asdf", Val: "count"}, {Type: ConstantType, Val: "asdf"}}},
-
-		// 	args: args{name: "CountIs100", fs: Fields{"count": IntType}},
-		// 	wantErr: &RuleEngineError{
-		// 		ErrCode: ErrCodeInvalidOperandAs,
-		// 	},
-		// },
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			c := &ConditionType{
-				Operator:    tt.conditionType.Operator,
-				OperandType: tt.conditionType.OperandType,
-				Operands:    tt.conditionType.Operands,
-			}
-
-			gotErr := c.validateAndParseValues(tt.args.name, tt.args.fs)
-			if tt.wantErr == nil && gotErr == nil {
-				return
-			}
-
-			if tt.wantErr != nil && gotErr != nil && gotErr.ErrCode == tt.wantErr.ErrCode {
-				return
-			}
-
-			for _, op := range c.Operands {
-				if op.Type == ConstantType {
-					wantVal, _ := getTypedValue(op.Val, c.OperandType)
-					if !reflect.DeepEqual(op.typedValue, wantVal) {
-						t.Errorf("ConditionType.validate() gotVal:%v, wantVal:%v ", op.typedValue, wantVal)
-					}
-				}
-			}
-
-			t.Errorf("ConditionType.validate() gotErr:%v, wantErr:%v ", gotErr, tt.wantErr)
-		})
-	}
-}
-
-func TestRule_validate(t *testing.T) {
-
-	type args struct {
-		name              string
-		custConditionType map[string]*ConditionType
-	}
-	tests := []struct {
-		name    string
-		rule    Rule
-		args    args
-		wantErr *RuleEngineError
-	}{
-		{
-			name: "ValidOrRule",
-			rule: Rule{
-				Priority: 1,
-				RootCondition: &Condition{
-					ConditionType: OrOperator,
-					SubConditions: []*Condition{
-						{
-							ConditionType: "conditionType1",
-						},
-						{
-							ConditionType: "conditionType2",
-						},
-					},
-				},
-				Result: map[string]any{"asdf": "asdf"},
-			},
-			args: args{name: "OrRule", custConditionType: map[string]*ConditionType{
-				"conditionType1": nil,
-				"conditionType2": nil,
-				"conditionType3": nil,
-			}},
-			wantErr: nil,
-		},
-		{
-			name: "ValidAndRule",
-			rule: Rule{
-				Priority: 1,
-				RootCondition: &Condition{
-					ConditionType: AndOperator,
-					SubConditions: []*Condition{
-						{
-							ConditionType: "conditionType1",
-						},
-						{
-							ConditionType: "conditionType2",
-						},
-					},
-				},
-				Result: map[string]any{"asdf": "asdf"},
-			},
-			args: args{name: "AndRule", custConditionType: map[string]*ConditionType{
-				"conditionType1": nil,
-				"conditionType2": nil,
-				"conditionType3": nil,
-			}},
-			wantErr: nil,
-		},
-		{
-			name: "InvalidRuleConditionType",
-			rule: Rule{
-				Priority: 1,
-				RootCondition: &Condition{
-					ConditionType: AndOperator,
-					SubConditions: []*Condition{
-						{
-							ConditionType: "conditionTypeXX",
-						},
-						{
-							ConditionType: "conditionType2",
-						},
-					},
-				},
-				Result: map[string]any{"asdf": "asdf"},
-			},
-			args: args{name: "AndRule", custConditionType: map[string]*ConditionType{
-				"conditionType1": nil,
-				"conditionType2": nil,
-				"conditionType3": nil,
-			}},
-			wantErr: &RuleEngineError{
-				ErrCode: ErrCodeConditionTypeNotFound,
-			},
-		},
-		{
-			name: "InvalidRuleConditionCount",
-			rule: Rule{
-				Priority: 1,
-				RootCondition: &Condition{
-					ConditionType: AndOperator,
-					SubConditions: []*Condition{
-						{
-							ConditionType: "conditionTypeXX",
-						},
-					},
-				},
-				Result: map[string]any{"asdf": "asdf"},
-			},
-			args: args{name: "AndRule", custConditionType: map[string]*ConditionType{
-				"conditionType1": nil,
-				"conditionType2": nil,
-				"conditionType3": nil,
-			}},
-			wantErr: &RuleEngineError{
-				ErrCode: ErrCodeInvalidSubConditionCount,
-			},
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			r := &Rule{
-				Priority:      tt.rule.Priority,
-				RootCondition: tt.rule.RootCondition,
-				Result:        tt.rule.Result,
-			}
-			gotErr := r.validate(tt.args.name, tt.args.custConditionType)
-			if (tt.wantErr == nil) && (gotErr == nil) {
-				return
-			}
-
-			if gotErr != nil && tt.wantErr != nil && gotErr.ErrCode == tt.wantErr.ErrCode {
-				return
-			}
-
-			t.Errorf("Rule.validate() gotErr:%v, wantErr:%v ", gotErr, tt.wantErr)
-		})
-	}
-}
-
-func TestRuleEngineConfig_validate(t *testing.T) {
-
-	tests := []struct {
-		name             string
-		ruleEngineConfig RuleEngineConfig
-		wantErr          *RuleEngineError
-	}{
-		{
-			name: "ValidRuleEngineConfig",
-			ruleEngineConfig: RuleEngineConfig{
-				Fields: Fields{
-					"discount":    IntType,
-					"totalAmount": IntType,
-				},
-				ConditionTypes: map[string]*ConditionType{
-					"IsDiscountGreaterThan10": {
-						Operator:    GreaterOperator,
-						OperandType: IntType,
-						Operands: []*Operand{
-							{
-								Type: FieldType,
-								Val:  "discount",
-							},
-							{
-								Type: ConstantType,
-								Val:  "10",
-							},
-						},
-					},
-					"amountGreaterThan1000": {
-						Operator:    GreaterOperator,
-						OperandType: IntType,
-						Operands: []*Operand{
-							{
-								Type: FieldType,
-								Val:  "totalAmount",
-							},
-							{
-								Type: ConstantType,
-								Val:  "1000",
-							},
-						},
-					},
-				},
-				Rules: map[string]*Rule{
-					"FirstRule": {
-						Priority: 1,
-						RootCondition: &Condition{
-							ConditionType: AndOperator,
-							SubConditions: []*Condition{
-								{
-									ConditionType: "IsDiscountGreaterThan10",
-								},
-								{
-									ConditionType: "amountGreaterThan1000",
-								},
-							},
-						},
-						Result: map[string]any{
-							"test": "success",
-						},
-					},
-				},
-			},
-			wantErr: nil,
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			c := &RuleEngineConfig{
-				Fields:         tt.ruleEngineConfig.Fields,
-				ConditionTypes: tt.ruleEngineConfig.ConditionTypes,
-				Rules:          tt.ruleEngineConfig.Rules,
-			}
-
-			gotErr := c.Validate()
-
-			if (tt.wantErr == nil) && (gotErr == nil) {
-				return
-			}
-
-			if gotErr != nil && tt.wantErr != nil && gotErr.ErrCode == tt.wantErr.ErrCode {
-				return
-			}
-
-			t.Errorf("RuleEngineConfig.Validate() gotErr:%v, wantErr:%v", gotErr, tt.wantErr)
-		})
-	}
-}
-
-func TestInput_validateAndParseValues(t *testing.T) {
+func Test_fieldValueTypeValidator(t *testing.T) {
 	type args struct {
 		fs Fields
 	}
 	tests := []struct {
-		name    string
-		input   Input
-		args    args
-		want    typedValueMap
-		wantErr *RuleEngineError
+		name          string
+		args          args
+		validatorFunc fieldValidatorFunc
+		wantErr       *RuleEngineError
 	}{
 		{
-			name:  "ValidInput",
-			args:  args{fs: Fields{"dog": "int", "cat": "float", "rat": "bool", "ant": "string"}},
-			input: Input{"dog": "1", "cat": "1.1", "rat": "false", "ant": "sugar"},
-			want: typedValueMap{
-				"dog": int64(1),
-				"cat": float64(1.1),
-				"rat": false,
-				"ant": "sugar",
+			name: "valid",
+			args: args{
+				fs: Fields{
+					"testInteger": Integer,
+					"testFloat":   Float,
+					"testString":  String,
+					"testBoolean": Boolean,
+				},
 			},
-			wantErr: nil,
+			validatorFunc: fieldValueTypeValidator(),
+			wantErr:       nil,
 		},
 		{
-			name:  "MissingMandatoryFieldAsInput",
-			args:  args{fs: Fields{"dog": "int", "cat": "float", "rat": "bool", "ant": "string"}},
-			input: Input{"dog": "1", "cat": "1.1", "rat": "false"},
-			wantErr: &RuleEngineError{
-				ErrCode: ErrCodeFieldNotFound,
+			name: "invalid",
+			args: args{
+				fs: Fields{
+					"invalid": unknownValueType,
+				},
 			},
-		},
-		{
-			name:  "IntParsingFailed",
-			args:  args{fs: Fields{"dog": "int", "cat": "float", "rat": "bool", "ant": "string"}},
-			input: Input{"dog": "1.1", "cat": "1.1", "rat": "false", "ant": "sugar"},
-			wantErr: &RuleEngineError{
-				ErrCode: ErrCodeFailedParsingInput,
-			},
-		},
-		{
-			name:  "FloatParsingFailed",
-			args:  args{fs: Fields{"dog": "int", "cat": "float", "rat": "bool", "ant": "string"}},
-			input: Input{"dog": "1", "cat": "1.1asdf", "rat": "false", "ant": "sugar"},
-			wantErr: &RuleEngineError{
-				ErrCode: ErrCodeFailedParsingInput,
-			},
-		},
-		{
-			name:  "BoolParsingFailed",
-			args:  args{fs: Fields{"dog": "int", "cat": "float", "rat": "bool", "ant": "string"}},
-			input: Input{"dog": "1", "cat": "1.1", "rat": "asdf", "ant": "sugar"},
-			wantErr: &RuleEngineError{
-				ErrCode: ErrCodeFailedParsingInput,
-			},
+			validatorFunc: fieldValueTypeValidator(),
+			wantErr:       newError(ErrCodeInvalidValueType),
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, gotErr := tt.input.validateAndParseValues(tt.args.fs)
 
-			if tt.wantErr == nil && gotErr == nil {
-				if !reflect.DeepEqual(got, tt.want) {
-					t.Errorf("Input.Validate() got:%v gotErr:%v, want:%v wantErr:%v", got, gotErr, tt.want, tt.wantErr)
-				}
-				return
+			if gotErr := tt.validatorFunc(tt.args.fs); !isErrorEqual(gotErr, tt.wantErr) {
+				t.Errorf("fieldValueTypeValidator() = %v, want %v", gotErr, tt.wantErr)
+			}
+		})
+	}
+}
+
+func Test_operandCountValidator(t *testing.T) {
+	type args struct {
+		fs Fields
+		ct *ConditionType
+	}
+	tests := []struct {
+		name          string
+		args          args
+		validatorFunc conditionTypeValidatorFunc
+		wantErr       *RuleEngineError
+	}{
+		{
+			name: "valid",
+			args: args{
+				ct: &ConditionType{
+					Operator: EqualOperator,
+					Operands: []*Operand{
+						{
+							Type: Field,
+						},
+						{
+							Type: Constant,
+						},
+					},
+				},
+			},
+			validatorFunc: operandCountValidator(2),
+			wantErr:       nil,
+		},
+		{
+			name: "invalid",
+			args: args{
+				ct: &ConditionType{
+					Operator: EqualOperator,
+					Operands: []*Operand{
+						{
+							Type: Field,
+						},
+						{
+							Type: Constant,
+						},
+					},
+				},
+			},
+			validatorFunc: operandCountValidator(1),
+			wantErr:       newError(ErrCodeInvalidOperandsLength),
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+
+			if gotErr := tt.validatorFunc(tt.args.ct, tt.args.fs); !isErrorEqual(gotErr, tt.wantErr) {
+				t.Errorf("operandCountValidator() = %v, want %v", gotErr, tt.wantErr)
+			}
+		})
+	}
+}
+
+func Test_operandsWithSameValueTypeValidator(t *testing.T) {
+	type args struct {
+		fs Fields
+		ct *ConditionType
+	}
+	tests := []struct {
+		name          string
+		args          args
+		validatorFunc conditionTypeValidatorFunc
+		wantErr       *RuleEngineError
+	}{
+		{
+			name: "valid",
+			args: args{
+				ct: &ConditionType{
+					Operator: EqualOperator,
+					Operands: []*Operand{
+						{
+							Type:      Field,
+							ValueType: Integer,
+						},
+						{
+							Type:      Constant,
+							ValueType: Integer,
+						},
+					},
+				},
+			},
+			validatorFunc: operandsWithSameValueTypeValidator(),
+			wantErr:       nil,
+		},
+		{
+			name: "invalid",
+			args: args{
+				ct: &ConditionType{
+					Operator: EqualOperator,
+					Operands: []*Operand{
+						{
+							Type:      Field,
+							ValueType: Integer,
+						},
+						{
+							Type:      Constant,
+							ValueType: Float,
+						},
+					},
+				},
+			},
+			validatorFunc: operandsWithSameValueTypeValidator(),
+			wantErr:       newError(ErrCodeInvalidOperand),
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+
+			if gotErr := tt.validatorFunc(tt.args.ct, tt.args.fs); !isErrorEqual(gotErr, tt.wantErr) {
+				t.Errorf("operandsWithSameValueTypeValidator() = %v, want %v", gotErr, tt.wantErr)
+			}
+		})
+	}
+}
+
+func Test_operandValueTypeValidator(t *testing.T) {
+	type args struct {
+		fs Fields
+		ct *ConditionType
+	}
+	tests := []struct {
+		name          string
+		args          args
+		validatorFunc conditionTypeValidatorFunc
+		wantErr       *RuleEngineError
+	}{
+		{
+			name: "valid",
+			args: args{
+				ct: &ConditionType{
+					Operator: EqualOperator,
+					Operands: []*Operand{
+						{
+							Type:      Field,
+							ValueType: Integer,
+						},
+						{
+							Type:      Constant,
+							ValueType: Float,
+						},
+					},
+				},
+			},
+			validatorFunc: operandValueTypeValidator(Integer, Float),
+			wantErr:       nil,
+		},
+		{
+			name: "invalid",
+			args: args{
+				ct: &ConditionType{
+					Operator: EqualOperator,
+					Operands: []*Operand{
+						{
+							Type:      Field,
+							ValueType: String,
+						},
+						{
+							Type:      Constant,
+							ValueType: Float,
+						},
+					},
+				},
+			},
+			validatorFunc: operandValueTypeValidator(Integer, Float),
+			wantErr:       newError(ErrCodeInvalidOperand),
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+
+			if gotErr := tt.validatorFunc(tt.args.ct, tt.args.fs); !isErrorEqual(gotErr, tt.wantErr) {
+				t.Errorf("operandValueTypeValidator() = %v, want %v", gotErr, tt.wantErr)
+			}
+		})
+	}
+}
+
+func Test_operandValidator(t *testing.T) {
+	type args struct {
+		fs Fields
+		ct *ConditionType
+	}
+	tests := []struct {
+		name          string
+		args          args
+		validatorFunc conditionTypeValidatorFunc
+		wantErr       *RuleEngineError
+	}{
+		{
+			name: "valid",
+			args: args{
+				fs: Fields{
+					"testField": Integer,
+				},
+				ct: &ConditionType{
+					Operator: EqualOperator,
+					Operands: []*Operand{
+						{
+							Type:      Field,
+							ValueType: Integer,
+							Val:       "testField",
+						},
+						{
+							Type:      Constant,
+							ValueType: Integer,
+							Val:       "10",
+						},
+					},
+				},
+			},
+			validatorFunc: operandValidator(),
+			wantErr:       nil,
+		},
+		{
+			name: "invalid_wrongOperandType",
+			args: args{
+				fs: Fields{
+					"testField": Integer,
+				},
+				ct: &ConditionType{
+					Operands: []*Operand{
+						{
+							Type: unknownOperandType,
+						},
+					},
+				},
+			},
+			validatorFunc: operandValidator(),
+			wantErr:       newError(ErrCodeInvalidOperand),
+		},
+		{
+			name: "invalid_wrongOperandValueType",
+			args: args{
+				fs: Fields{
+					"testField": Integer,
+				},
+				ct: &ConditionType{
+					Operands: []*Operand{
+						{
+							Type:      Field,
+							ValueType: unknownValueType,
+						},
+					},
+				},
+			},
+			validatorFunc: operandValidator(),
+			wantErr:       newError(ErrCodeInvalidOperand),
+		},
+		{
+			name: "invalid_FieldNotFound",
+			args: args{
+				ct: &ConditionType{
+					Operands: []*Operand{
+						{
+							Type:      Field,
+							ValueType: Integer,
+							Val:       "testField",
+						},
+					},
+				},
+			},
+			validatorFunc: operandValidator(),
+			wantErr:       newError(ErrCodeFieldNotFound),
+		},
+		{
+			name: "invalid_ConstantValueParsingFailed",
+			args: args{
+				ct: &ConditionType{
+					Operands: []*Operand{
+						{
+							Type:      Constant,
+							ValueType: Integer,
+							Val:       "invalidInteger",
+						},
+					},
+				},
+			},
+			validatorFunc: operandValidator(),
+			wantErr:       newError(ErrCodeParsingFailed),
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if gotErr := tt.validatorFunc(tt.args.ct, tt.args.fs); !isErrorEqual(gotErr, tt.wantErr) {
+				t.Errorf("operandValidator() = %v, want %v", gotErr, tt.wantErr)
+			}
+		})
+	}
+}
+
+func Test_RuleValidator_SubConditionCount(t *testing.T) {
+	type args struct {
+		c *Condition
+	}
+	tests := []struct {
+		name          string
+		args          args
+		validatorFunc ruleConditionValidatorFunc
+		wantErr       *RuleEngineError
+	}{
+		{
+			name: "valid",
+			args: args{
+				c: &Condition{
+					Type: AndCondition,
+					SubConditions: []*Condition{
+						{
+							Type: OrCondition,
+						},
+						{
+							Type: OrCondition,
+						},
+					},
+				},
+			},
+			validatorFunc: subConditionCountRuleConditionValidator(2),
+			wantErr:       nil,
+		},
+		{
+			name: "invalid",
+			args: args{
+				c: &Condition{
+					Type: AndCondition,
+					SubConditions: []*Condition{
+						{
+							Type: OrCondition,
+						},
+					},
+				},
+			},
+			validatorFunc: subConditionCountRuleConditionValidator(2),
+			wantErr:       newError(ErrCodeInvalidSubConditionCount),
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if gotErr := tt.validatorFunc(tt.args.c); !isErrorEqual(gotErr, tt.wantErr) {
+				t.Errorf("operandValidator() = %v, want %v", gotErr, tt.wantErr)
+			}
+		})
+	}
+}
+
+func Test_RuleValidator_MinSubConditionCount(t *testing.T) {
+	type args struct {
+		c *Condition
+	}
+	tests := []struct {
+		name          string
+		args          args
+		validatorFunc ruleConditionValidatorFunc
+		wantErr       *RuleEngineError
+	}{
+		{
+			name: "valid_exact",
+			args: args{
+				c: &Condition{
+					Type: AndCondition,
+					SubConditions: []*Condition{
+						{
+							Type: OrCondition,
+						},
+						{
+							Type: OrCondition,
+						},
+					},
+				},
+			},
+			validatorFunc: minSubConditionCountRuleConditionValidator(2),
+			wantErr:       nil,
+		},
+		{
+			name: "valid_more",
+			args: args{
+				c: &Condition{
+					Type: AndCondition,
+					SubConditions: []*Condition{
+						{
+							Type: OrCondition,
+						},
+						{
+							Type: OrCondition,
+						},
+						{
+							Type: OrCondition,
+						},
+					},
+				},
+			},
+			validatorFunc: minSubConditionCountRuleConditionValidator(2),
+			wantErr:       nil,
+		},
+		{
+			name: "invalid",
+			args: args{
+				c: &Condition{
+					Type: AndCondition,
+					SubConditions: []*Condition{
+						{
+							Type: OrCondition,
+						},
+					},
+				},
+			},
+			validatorFunc: minSubConditionCountRuleConditionValidator(2),
+			wantErr:       newError(ErrCodeInvalidSubConditionCount),
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if gotErr := tt.validatorFunc(tt.args.c); !isErrorEqual(gotErr, tt.wantErr) {
+				t.Errorf("operandValidator() = %v, want %v", gotErr, tt.wantErr)
+			}
+		})
+	}
+}
+
+func Test_ruleEngineConfigValidator_validate(t *testing.T) {
+	type testValidators struct {
+		fieldValidators         []fieldValidatorFunc
+		condTypeValidators      map[string][]conditionTypeValidatorFunc
+		ruleConditionValidators map[string][]ruleConditionValidatorFunc
+	}
+	type args struct {
+		config *RuleEngineConfig
+	}
+	tests := []struct {
+		name       string
+		validators testValidators
+		args       args
+		wantErr    *RuleEngineError
+	}{
+		{
+			name: "valid_fields",
+			validators: testValidators{
+				fieldValidators: engineConfigValidator.fieldValidators,
+			},
+			args: args{
+				config: &RuleEngineConfig{
+					Fields: Fields{
+						"testInteger": Integer,
+						"testFloat":   Float,
+						"testString":  String,
+						"testBoolean": Boolean,
+					},
+				},
+			},
+			wantErr: nil,
+		},
+		{
+			name: "invalid_fields",
+			validators: testValidators{
+				fieldValidators: engineConfigValidator.fieldValidators,
+			},
+			args: args{
+				config: &RuleEngineConfig{
+					Fields: Fields{
+						"testInteger": unknownValueType,
+						"testFloat":   Float,
+						"testString":  String,
+						"testBoolean": Boolean,
+					},
+				},
+			},
+			wantErr: newError(ErrCodeInvalidValueType),
+		},
+		{
+			name: "valid_EqualOperatorBasedConditionType_Integer",
+			validators: testValidators{
+				condTypeValidators: engineConfigValidator.condTypeValidators,
+			},
+			args: args{
+				config: &RuleEngineConfig{
+					Fields: Fields{
+						"testInteger": Integer,
+					},
+					ConditionTypes: map[string]*ConditionType{
+						"IntegerEqual": {
+							Operator: EqualOperator,
+							Operands: []*Operand{
+								{
+									Type:      Field,
+									ValueType: Integer,
+									Val:       "testInteger",
+								},
+								{
+									Type:      Constant,
+									ValueType: Integer,
+									Val:       "10",
+								},
+							},
+						},
+					},
+				},
+			},
+			wantErr: nil,
+		},
+		{
+			name: "valid_EqualOperatorBasedConditionType_Float",
+			validators: testValidators{
+				condTypeValidators: engineConfigValidator.condTypeValidators,
+			},
+			args: args{
+				config: &RuleEngineConfig{
+					Fields: Fields{
+						"testFloat": Float,
+					},
+					ConditionTypes: map[string]*ConditionType{
+						"IntegerEqual": {
+							Operator: EqualOperator,
+							Operands: []*Operand{
+								{
+									Type:      Field,
+									ValueType: Float,
+									Val:       "testFloat",
+								},
+								{
+									Type:      Constant,
+									ValueType: Float,
+									Val:       "10.1",
+								},
+							},
+						},
+					},
+				},
+			},
+			wantErr: nil,
+		},
+		{
+			name: "valid_EqualOperatorBasedConditionType_Boolean",
+			validators: testValidators{
+				condTypeValidators: engineConfigValidator.condTypeValidators,
+			},
+			args: args{
+				config: &RuleEngineConfig{
+					Fields: Fields{
+						"testBoolean": Boolean,
+					},
+					ConditionTypes: map[string]*ConditionType{
+						"IntegerEqual": {
+							Operator: EqualOperator,
+							Operands: []*Operand{
+								{
+									Type:      Field,
+									ValueType: Boolean,
+									Val:       "testBoolean",
+								},
+								{
+									Type:      Constant,
+									ValueType: Boolean,
+									Val:       "true",
+								},
+							},
+						},
+					},
+				},
+			},
+			wantErr: nil,
+		},
+		{
+			name: "valid_EqualOperatorBasedConditionType_String",
+			validators: testValidators{
+				condTypeValidators: engineConfigValidator.condTypeValidators,
+			},
+			args: args{
+				config: &RuleEngineConfig{
+					Fields: Fields{
+						"testString": String,
+					},
+					ConditionTypes: map[string]*ConditionType{
+						"IntegerEqual": {
+							Operator: EqualOperator,
+							Operands: []*Operand{
+								{
+									Type:      Field,
+									ValueType: String,
+									Val:       "testString",
+								},
+								{
+									Type:      Constant,
+									ValueType: String,
+									Val:       "testString",
+								},
+							},
+						},
+					},
+				},
+			},
+			wantErr: nil,
+		},
+		{
+			name: "invalid_EqualOperatorBasedConditionType_InvalidOperandValueType",
+			validators: testValidators{
+				condTypeValidators: engineConfigValidator.condTypeValidators,
+			},
+			args: args{
+				config: &RuleEngineConfig{
+					Fields: Fields{
+						"testString": String,
+					},
+					ConditionTypes: map[string]*ConditionType{
+						"IntegerEqual": {
+							Operator: EqualOperator,
+							Operands: []*Operand{
+								{
+									Type:      Field,
+									ValueType: unknownValueType,
+									Val:       "testString",
+								},
+								{
+									Type:      Constant,
+									ValueType: unknownValueType,
+									Val:       "testString",
+								},
+							},
+						},
+					},
+				},
+			},
+			wantErr: newError(ErrCodeInvalidOperand),
+		},
+
+		{
+			name: "valid_NotEqualOperatorBasedConditionType_Integer",
+			validators: testValidators{
+				condTypeValidators: engineConfigValidator.condTypeValidators,
+			},
+			args: args{
+				config: &RuleEngineConfig{
+					Fields: Fields{
+						"testInteger": Integer,
+					},
+					ConditionTypes: map[string]*ConditionType{
+						"IntegerEqual": {
+							Operator: NotEqualOperator,
+							Operands: []*Operand{
+								{
+									Type:      Field,
+									ValueType: Integer,
+									Val:       "testInteger",
+								},
+								{
+									Type:      Constant,
+									ValueType: Integer,
+									Val:       "10",
+								},
+							},
+						},
+					},
+				},
+			},
+			wantErr: nil,
+		},
+		{
+			name: "valid_NotEqualOperatorBasedConditionType_Float",
+			validators: testValidators{
+				condTypeValidators: engineConfigValidator.condTypeValidators,
+			},
+			args: args{
+				config: &RuleEngineConfig{
+					Fields: Fields{
+						"testFloat": Float,
+					},
+					ConditionTypes: map[string]*ConditionType{
+						"IntegerEqual": {
+							Operator: NotEqualOperator,
+							Operands: []*Operand{
+								{
+									Type:      Field,
+									ValueType: Float,
+									Val:       "testFloat",
+								},
+								{
+									Type:      Constant,
+									ValueType: Float,
+									Val:       "10.1",
+								},
+							},
+						},
+					},
+				},
+			},
+			wantErr: nil,
+		},
+		{
+			name: "valid_NotEqualOperatorBasedConditionType_Boolean",
+			validators: testValidators{
+				condTypeValidators: engineConfigValidator.condTypeValidators,
+			},
+			args: args{
+				config: &RuleEngineConfig{
+					Fields: Fields{
+						"testBoolean": Boolean,
+					},
+					ConditionTypes: map[string]*ConditionType{
+						"IntegerEqual": {
+							Operator: NotEqualOperator,
+							Operands: []*Operand{
+								{
+									Type:      Field,
+									ValueType: Boolean,
+									Val:       "testBoolean",
+								},
+								{
+									Type:      Constant,
+									ValueType: Boolean,
+									Val:       "true",
+								},
+							},
+						},
+					},
+				},
+			},
+			wantErr: nil,
+		},
+		{
+			name: "valid_NotEqualOperatorBasedConditionType_String",
+			validators: testValidators{
+				condTypeValidators: engineConfigValidator.condTypeValidators,
+			},
+			args: args{
+				config: &RuleEngineConfig{
+					Fields: Fields{
+						"testString": String,
+					},
+					ConditionTypes: map[string]*ConditionType{
+						"IntegerEqual": {
+							Operator: NotEqualOperator,
+							Operands: []*Operand{
+								{
+									Type:      Field,
+									ValueType: String,
+									Val:       "testString",
+								},
+								{
+									Type:      Constant,
+									ValueType: String,
+									Val:       "testString",
+								},
+							},
+						},
+					},
+				},
+			},
+			wantErr: nil,
+		},
+		{
+			name: "invalid_NotEqualOperatorBasedConditionType_InvalidOperandValueType",
+			validators: testValidators{
+				condTypeValidators: engineConfigValidator.condTypeValidators,
+			},
+			args: args{
+				config: &RuleEngineConfig{
+					Fields: Fields{
+						"testString": String,
+					},
+					ConditionTypes: map[string]*ConditionType{
+						"IntegerEqual": {
+							Operator: NotEqualOperator,
+							Operands: []*Operand{
+								{
+									Type:      Field,
+									ValueType: unknownValueType,
+									Val:       "testString",
+								},
+								{
+									Type:      Constant,
+									ValueType: unknownValueType,
+									Val:       "testString",
+								},
+							},
+						},
+					},
+				},
+			},
+			wantErr: newError(ErrCodeInvalidOperand),
+		},
+
+		{
+			name: "valid_GreaterOperatorBasedConditionType_Integer",
+			validators: testValidators{
+				condTypeValidators: engineConfigValidator.condTypeValidators,
+			},
+			args: args{
+				config: &RuleEngineConfig{
+					Fields: Fields{
+						"testInteger": Integer,
+					},
+					ConditionTypes: map[string]*ConditionType{
+						"IntegerEqual": {
+							Operator: GreaterOperator,
+							Operands: []*Operand{
+								{
+									Type:      Field,
+									ValueType: Integer,
+									Val:       "testInteger",
+								},
+								{
+									Type:      Constant,
+									ValueType: Integer,
+									Val:       "10",
+								},
+							},
+						},
+					},
+				},
+			},
+			wantErr: nil,
+		},
+		{
+			name: "valid_GreaterOperatorBasedConditionType_Float",
+			validators: testValidators{
+				condTypeValidators: engineConfigValidator.condTypeValidators,
+			},
+			args: args{
+				config: &RuleEngineConfig{
+					Fields: Fields{
+						"testFloat": Float,
+					},
+					ConditionTypes: map[string]*ConditionType{
+						"IntegerEqual": {
+							Operator: GreaterOperator,
+							Operands: []*Operand{
+								{
+									Type:      Field,
+									ValueType: Float,
+									Val:       "testFloat",
+								},
+								{
+									Type:      Constant,
+									ValueType: Float,
+									Val:       "10.1",
+								},
+							},
+						},
+					},
+				},
+			},
+			wantErr: nil,
+		},
+		{
+			name: "invalid_GreaterOperatorBasedConditionType_InvalidOperandValueType",
+			validators: testValidators{
+				condTypeValidators: engineConfigValidator.condTypeValidators,
+			},
+			args: args{
+				config: &RuleEngineConfig{
+					Fields: Fields{
+						"testString": String,
+					},
+					ConditionTypes: map[string]*ConditionType{
+						"IntegerEqual": {
+							Operator: GreaterOperator,
+							Operands: []*Operand{
+								{
+									Type:      Field,
+									ValueType: unknownValueType,
+									Val:       "testString",
+								},
+								{
+									Type:      Constant,
+									ValueType: unknownValueType,
+									Val:       "testString",
+								},
+							},
+						},
+					},
+				},
+			},
+			wantErr: newError(ErrCodeInvalidOperand),
+		},
+
+		{
+			name: "valid_GreaterEqualOperatorBasedConditionType_Integer",
+			validators: testValidators{
+				condTypeValidators: engineConfigValidator.condTypeValidators,
+			},
+			args: args{
+				config: &RuleEngineConfig{
+					Fields: Fields{
+						"testInteger": Integer,
+					},
+					ConditionTypes: map[string]*ConditionType{
+						"IntegerEqual": {
+							Operator: GreaterEqualOperator,
+							Operands: []*Operand{
+								{
+									Type:      Field,
+									ValueType: Integer,
+									Val:       "testInteger",
+								},
+								{
+									Type:      Constant,
+									ValueType: Integer,
+									Val:       "10",
+								},
+							},
+						},
+					},
+				},
+			},
+			wantErr: nil,
+		},
+		{
+			name: "valid_GreaterEqualOperatorBasedConditionType_Float",
+			validators: testValidators{
+				condTypeValidators: engineConfigValidator.condTypeValidators,
+			},
+			args: args{
+				config: &RuleEngineConfig{
+					Fields: Fields{
+						"testFloat": Float,
+					},
+					ConditionTypes: map[string]*ConditionType{
+						"IntegerEqual": {
+							Operator: GreaterEqualOperator,
+							Operands: []*Operand{
+								{
+									Type:      Field,
+									ValueType: Float,
+									Val:       "testFloat",
+								},
+								{
+									Type:      Constant,
+									ValueType: Float,
+									Val:       "10.1",
+								},
+							},
+						},
+					},
+				},
+			},
+			wantErr: nil,
+		},
+		{
+			name: "invalid_GreaterEqualOperatorBasedConditionType_InvalidOperandValueType",
+			validators: testValidators{
+				condTypeValidators: engineConfigValidator.condTypeValidators,
+			},
+			args: args{
+				config: &RuleEngineConfig{
+					Fields: Fields{
+						"testString": String,
+					},
+					ConditionTypes: map[string]*ConditionType{
+						"IntegerEqual": {
+							Operator: GreaterEqualOperator,
+							Operands: []*Operand{
+								{
+									Type:      Field,
+									ValueType: unknownValueType,
+									Val:       "testString",
+								},
+								{
+									Type:      Constant,
+									ValueType: unknownValueType,
+									Val:       "testString",
+								},
+							},
+						},
+					},
+				},
+			},
+			wantErr: newError(ErrCodeInvalidOperand),
+		},
+
+		{
+			name: "valid_LessOperatorBasedConditionType_Integer",
+			validators: testValidators{
+				condTypeValidators: engineConfigValidator.condTypeValidators,
+			},
+			args: args{
+				config: &RuleEngineConfig{
+					Fields: Fields{
+						"testInteger": Integer,
+					},
+					ConditionTypes: map[string]*ConditionType{
+						"IntegerEqual": {
+							Operator: LessOperator,
+							Operands: []*Operand{
+								{
+									Type:      Field,
+									ValueType: Integer,
+									Val:       "testInteger",
+								},
+								{
+									Type:      Constant,
+									ValueType: Integer,
+									Val:       "10",
+								},
+							},
+						},
+					},
+				},
+			},
+			wantErr: nil,
+		},
+		{
+			name: "valid_LessOperatorBasedConditionType_Float",
+			validators: testValidators{
+				condTypeValidators: engineConfigValidator.condTypeValidators,
+			},
+			args: args{
+				config: &RuleEngineConfig{
+					Fields: Fields{
+						"testFloat": Float,
+					},
+					ConditionTypes: map[string]*ConditionType{
+						"IntegerEqual": {
+							Operator: LessOperator,
+							Operands: []*Operand{
+								{
+									Type:      Field,
+									ValueType: Float,
+									Val:       "testFloat",
+								},
+								{
+									Type:      Constant,
+									ValueType: Float,
+									Val:       "10.1",
+								},
+							},
+						},
+					},
+				},
+			},
+			wantErr: nil,
+		},
+		{
+			name: "invalid_LessOperatorBasedConditionType_InvalidOperandValueType",
+			validators: testValidators{
+				condTypeValidators: engineConfigValidator.condTypeValidators,
+			},
+			args: args{
+				config: &RuleEngineConfig{
+					Fields: Fields{
+						"testString": String,
+					},
+					ConditionTypes: map[string]*ConditionType{
+						"IntegerEqual": {
+							Operator: LessOperator,
+							Operands: []*Operand{
+								{
+									Type:      Field,
+									ValueType: unknownValueType,
+									Val:       "testString",
+								},
+								{
+									Type:      Constant,
+									ValueType: unknownValueType,
+									Val:       "testString",
+								},
+							},
+						},
+					},
+				},
+			},
+			wantErr: newError(ErrCodeInvalidOperand),
+		},
+
+		{
+			name: "valid_LessEqualOperatorBasedConditionType_Integer",
+			validators: testValidators{
+				condTypeValidators: engineConfigValidator.condTypeValidators,
+			},
+			args: args{
+				config: &RuleEngineConfig{
+					Fields: Fields{
+						"testInteger": Integer,
+					},
+					ConditionTypes: map[string]*ConditionType{
+						"IntegerEqual": {
+							Operator: LessEqualOperator,
+							Operands: []*Operand{
+								{
+									Type:      Field,
+									ValueType: Integer,
+									Val:       "testInteger",
+								},
+								{
+									Type:      Constant,
+									ValueType: Integer,
+									Val:       "10",
+								},
+							},
+						},
+					},
+				},
+			},
+			wantErr: nil,
+		},
+		{
+			name: "valid_LessEqualOperatorBasedConditionType_Float",
+			validators: testValidators{
+				condTypeValidators: engineConfigValidator.condTypeValidators,
+			},
+			args: args{
+				config: &RuleEngineConfig{
+					Fields: Fields{
+						"testFloat": Float,
+					},
+					ConditionTypes: map[string]*ConditionType{
+						"IntegerEqual": {
+							Operator: LessOperator,
+							Operands: []*Operand{
+								{
+									Type:      Field,
+									ValueType: Float,
+									Val:       "testFloat",
+								},
+								{
+									Type:      Constant,
+									ValueType: Float,
+									Val:       "10.1",
+								},
+							},
+						},
+					},
+				},
+			},
+			wantErr: nil,
+		},
+		{
+			name: "invalid_LessEqualOperatorBasedConditionType_InvalidOperandValueType",
+			validators: testValidators{
+				condTypeValidators: engineConfigValidator.condTypeValidators,
+			},
+			args: args{
+				config: &RuleEngineConfig{
+					Fields: Fields{
+						"testString": String,
+					},
+					ConditionTypes: map[string]*ConditionType{
+						"IntegerEqual": {
+							Operator: LessOperator,
+							Operands: []*Operand{
+								{
+									Type:      Field,
+									ValueType: unknownValueType,
+									Val:       "testString",
+								},
+								{
+									Type:      Constant,
+									ValueType: unknownValueType,
+									Val:       "testString",
+								},
+							},
+						},
+					},
+				},
+			},
+			wantErr: newError(ErrCodeInvalidOperand),
+		},
+
+		{
+			name: "valid_ContainOperatorBasedConditionType_Integer",
+			validators: testValidators{
+				condTypeValidators: engineConfigValidator.condTypeValidators,
+			},
+			args: args{
+				config: &RuleEngineConfig{
+					Fields: Fields{
+						"testString": String,
+					},
+					ConditionTypes: map[string]*ConditionType{
+						"IntegerEqual": {
+							Operator: ContainOperator,
+							Operands: []*Operand{
+								{
+									Type:      Field,
+									ValueType: String,
+									Val:       "testString",
+								},
+								{
+									Type:      Constant,
+									ValueType: String,
+									Val:       "10",
+								},
+							},
+						},
+					},
+				},
+			},
+			wantErr: nil,
+		},
+		{
+			name: "invalid_ContainOperatorBasedConditionType_InvalidOperandValueType",
+			validators: testValidators{
+				condTypeValidators: engineConfigValidator.condTypeValidators,
+			},
+			args: args{
+				config: &RuleEngineConfig{
+					Fields: Fields{
+						"testString": String,
+					},
+					ConditionTypes: map[string]*ConditionType{
+						"IntegerEqual": {
+							Operator: LessOperator,
+							Operands: []*Operand{
+								{
+									Type:      Field,
+									ValueType: unknownValueType,
+									Val:       "testString",
+								},
+								{
+									Type:      Constant,
+									ValueType: unknownValueType,
+									Val:       "testString",
+								},
+							},
+						},
+					},
+				},
+			},
+			wantErr: newError(ErrCodeInvalidOperand),
+		},
+
+		{
+			name: "valid_RuleCondition_singleLevel",
+			validators: testValidators{
+				ruleConditionValidators: engineConfigValidator.ruleConditionValidators,
+			},
+			args: args{
+				config: &RuleEngineConfig{
+					ConditionTypes: map[string]*ConditionType{
+						"testCondition": {
+							Operator: GreaterOperator},
+					},
+					Rules: map[string]*RuleConfig{
+						"testRule": {
+							Priority: 1,
+							RootCondition: &Condition{
+								Type: OrCondition,
+								SubConditions: []*Condition{
+									{
+										Type: "testCondition",
+									},
+									{
+										Type: "testCondition",
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+			wantErr: nil,
+		},
+
+		{
+			name: "valid_RuleCondition_multiLevel",
+			validators: testValidators{
+				ruleConditionValidators: engineConfigValidator.ruleConditionValidators,
+			},
+			args: args{
+				config: &RuleEngineConfig{
+					ConditionTypes: map[string]*ConditionType{
+						"testCondition": {
+							Operator: GreaterOperator},
+					},
+					Rules: map[string]*RuleConfig{
+						"testRule": {
+							Priority: 1,
+							RootCondition: &Condition{
+								Type: OrCondition,
+								SubConditions: []*Condition{
+									{
+										Type: AndCondition,
+										SubConditions: []*Condition{
+											{Type: "testCondition"},
+											{Type: "testCondition"},
+										},
+									},
+									{
+										Type: AndCondition,
+										SubConditions: []*Condition{
+											{Type: "testCondition"},
+											{Type: "testCondition"},
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+			wantErr: nil,
+		},
+
+		{
+			name: "invalid_RuleCondition_singleLevel",
+			validators: testValidators{
+				ruleConditionValidators: engineConfigValidator.ruleConditionValidators,
+			},
+			args: args{
+				config: &RuleEngineConfig{
+					ConditionTypes: map[string]*ConditionType{
+						"testCondition": {
+							Operator: GreaterOperator},
+					},
+					Rules: map[string]*RuleConfig{
+						"testRule": {
+							Priority: 1,
+							RootCondition: &Condition{
+								Type: OrCondition,
+								SubConditions: []*Condition{
+									{
+										Type: "testCondition",
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+			wantErr: newError(ErrCodeInvalidSubConditionCount),
+		},
+
+		{
+			name: "invalid_RuleCondition_multiLevel",
+			validators: testValidators{
+				ruleConditionValidators: engineConfigValidator.ruleConditionValidators,
+			},
+			args: args{
+				config: &RuleEngineConfig{
+					ConditionTypes: map[string]*ConditionType{
+						"testCondition": {
+							Operator: GreaterOperator},
+					},
+					Rules: map[string]*RuleConfig{
+						"testRule": {
+							Priority: 1,
+							RootCondition: &Condition{
+								Type: OrCondition,
+								SubConditions: []*Condition{
+									{
+										Type: AndCondition,
+										SubConditions: []*Condition{
+											{Type: "testCondition"},
+											{Type: "testCondition"},
+										},
+									},
+									{
+										Type: AndCondition,
+										SubConditions: []*Condition{
+											{Type: "testCondition"},
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+			wantErr: newError(ErrCodeInvalidSubConditionCount),
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			v := &ruleEngineConfigValidator{
+				fieldValidators:         tt.validators.fieldValidators,
+				condTypeValidators:      tt.validators.condTypeValidators,
+				ruleConditionValidators: tt.validators.ruleConditionValidators,
 			}
 
-			if tt.wantErr != nil && gotErr != nil && gotErr.ErrCode == tt.wantErr.ErrCode {
-				return
+			if gotErr := v.validate(tt.args.config); !isErrorEqual(gotErr, tt.wantErr) {
+				t.Errorf("ruleEngineConfigValidator.validate() gotErr %v, wantErr %v", gotErr, tt.wantErr)
 			}
-
-			t.Errorf("Input.Validate() got:%v gotErr:%v, want:%v wantErr:%v", got, gotErr, tt.want, tt.wantErr)
 		})
 	}
 }

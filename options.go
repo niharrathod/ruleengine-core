@@ -3,46 +3,55 @@ package ruleenginecore
 type evaluationType uint
 
 const (
-	Complete evaluationType = iota + 1
-	AscendingPriorityBased
-	DescendingPriorityBased
+	complete evaluationType = iota + 1
+	ascendingPriorityBased
+	descendingPriorityBased
 )
 
-type EvaluateOption struct {
+type evaluateOption struct {
 	evalType evaluationType
-	limit    uint
+	limit    int
 }
 
-var complete = EvaluateOption{
-	evalType: Complete,
+var completeEvalOption = evaluateOption{
+	evalType: complete,
 }
 
 type evaluateOptionSelector bool
 
 var evaluateOpSelector evaluateOptionSelector
 
-// all rules are evaluated without any rule priority consideration
-func (e *evaluateOptionSelector) Complete() *EvaluateOption {
-	return &complete
+// Evaluates all rules for given input
+func (e *evaluateOptionSelector) Complete() *evaluateOption {
+	return &completeEvalOption
 }
 
-// ascending priority based first n matched rules as outcome
-func (e *evaluateOptionSelector) AscendingPriorityBased(n uint) *EvaluateOption {
-	return &EvaluateOption{
-		evalType: AscendingPriorityBased,
+// Evaluates rules in ascending priority(ex. 1,2,3,...) order and considers first n matched rules as outcome
+func (e *evaluateOptionSelector) AscendingPriorityBased(n int) *evaluateOption {
+	return &evaluateOption{
+		evalType: ascendingPriorityBased,
 		limit:    n,
 	}
 }
 
-// descending priority based first n matched rules as outcome
-func (e *evaluateOptionSelector) DescendingPriorityBased(n uint) *EvaluateOption {
-	return &EvaluateOption{
-		evalType: DescendingPriorityBased,
+// Evaluates rules in descending priority(ex. 10,9,8,...) order and considers first n matched rules as outcome
+func (e *evaluateOptionSelector) DescendingPriorityBased(n int) *evaluateOption {
+	return &evaluateOption{
+		evalType: descendingPriorityBased,
 		limit:    n,
 	}
 }
 
-// options for rule engine evaluate operation
+// Evaluation options for rule engine
+//
+//  1. EvaluateOptions().Complete()
+//     evaluates all rules and returns output as a slice of matched rule.
+//
+//  2. EvaluateOptions().AscendingPriorityBased(5)
+//     evaluates rules in ascending priority order (ex : 1,2,3...) and returns top 5 matched rule as output
+//
+//  3. EvaluateOptions().DescendingPriorityBased(5)
+//     evaluate rules in descending priority order (ex: 10,9,8...) and returns top 5 matched rule as output
 func EvaluateOptions() *evaluateOptionSelector {
 	return &evaluateOpSelector
 }

@@ -7,43 +7,46 @@
     "conditionTypes": {
         "flightDestinationCondition": {
             "operator": "contain",
-            "operandType": "string",
             "operands": [
                 {
-                    "operandAs": "constant",
-                    "val": "Bangalore,Delhi,Mumbai,Chennai"
+                    "type": "constant",
+                    "valuetype": "string",
+                    "value": "Bangalore,Delhi,Mumbai,Chennai"
                 },
                 {
-                    "operandAs": "field",
-                    "val": "flightDestination"
+                    "type": "field",
+                    "valuetype": "string",
+                    "value": "flightDestination"
                 }
             ]
         },
         "isFlightBookingCondition": {
             "operator": "==",
-            "operandType": "bool",
             "operands": [
                 {
-                    "operandAs": "field",
-                    "val": "isFlightBooking"
+                    "type": "field",
+                    "valuetype": "bool",
+                    "value": "isFlightBooking"
                 },
                 {
-                    "operandAs": "constant",
-                    "val": "true"
+                    "type": "constant",
+                    "valuetype": "bool",
+                    "value": "true"
                 }
             ]
         },
         "totalAmountGreater20000": {
-            "operator": ">",
-            "operandType": "int",
+            "operator": ">",            
             "operands": [
                 {
-                    "operandAs": "field",
-                    "val": "totalAmount"
+                    "type": "field",
+                    "valuetype": "int",
+                    "value": "totalAmount"
                 },
                 {
-                    "operandAs": "constant",
-                    "val": "20000"
+                    "type": "constant",
+                    "valuetype": "int",
+                    "value": "20000"
                 }
             ]
         }
@@ -52,23 +55,23 @@
         "RuleDiscount10Per": {
             "priority": 1,
             "condition": {
-                "conditionType": "and",
+                "type": "and",
                 "subConditions": [
                     {
-                        "conditionType": "not",
+                        "type": "not",
                         "subConditions": [
                             {
-                                "conditionType": "totalAmountGreater20000",
+                                "type": "totalAmountGreater20000",
                                 "subConditions": null
                             }
                         ]
                     },
                     {
-                        "conditionType": "isFlightBookingCondition",
+                        "type": "isFlightBookingCondition",
                         "subConditions": null
                     },
                     {
-                        "conditionType": "flightDestinationCondition",
+                        "type": "flightDestinationCondition",
                         "subConditions": null
                     }
                 ]
@@ -80,18 +83,18 @@
         "RuleDiscount20Per": {
             "priority": 1,
             "condition": {
-                "conditionType": "and",
+                "type": "and",
                 "subConditions": [
                     {
-                        "conditionType": "totalAmountGreater20000",
+                        "type": "totalAmountGreater20000",
                         "subConditions": null
                     },
                     {
-                        "conditionType": "isFlightBookingCondition",
+                        "type": "isFlightBookingCondition",
                         "subConditions": null
                     },
                     {
-                        "conditionType": "flightDestinationCondition",
+                        "type": "flightDestinationCondition",
                         "subConditions": null
                     }
                 ]
